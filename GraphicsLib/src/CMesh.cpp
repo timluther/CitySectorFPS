@@ -4,15 +4,7 @@
 #include <math.h>
 #ifdef _MSC_VER
 #include "windows.h"
-#ifdef ANGLE
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#else
-#include "GL/gl.h"
-#endif
-
+#include "gl_includes.h"
 #endif
 
 #include "Utility.h"

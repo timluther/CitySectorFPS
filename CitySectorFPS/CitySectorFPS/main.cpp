@@ -18,7 +18,7 @@ bool CitySectorFPS::initialize()
 
 	const std::string fs = SHADER_SOURCE
 		(
-		precision mediump float;s
+		precision mediump float;
 	void main()
 	{
 		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
