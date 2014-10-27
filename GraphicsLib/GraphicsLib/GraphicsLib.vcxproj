@@ -57,7 +57,7 @@
       <AdditionalDependencies>angle_util.lib;libEGL.lib;libGLESv2.lib;preprocessor.lib;translator.lib;translator_lib.lib;translator_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\angle\projects\build\Release_Win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\angle\projects\build\Release_Win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
