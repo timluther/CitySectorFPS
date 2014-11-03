@@ -1,6 +1,7 @@
 #ifndef CMESH_H
 #define CMESH_H
 #include "CVector3f.h"
+#include "CVertexBuffer.h"
 enum EFillMode
 {
     E_BACKFACING,
