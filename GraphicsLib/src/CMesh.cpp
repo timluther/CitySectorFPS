@@ -325,9 +325,9 @@ void CMesh::draw()
 		//mMaterial->mVertexAttributes.Use(mVertices.GetGLHandle());
 
 		//mMaterial->BeginDraw();
-
+		// mIndexBuffer.GLIndexType()
 		mIndexBuffer.Use();
-		glDrawElements(GL_TRIANGLES, mIndexBuffer.Count(), mIndexBuffer.GLIndexType(), 0);
+		glDrawElements(GL_TRIANGLES, mIndexBuffer.Count(), GL_UNSIGNED_SHORT, 0);
 		//mMaterial->EndDraw();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

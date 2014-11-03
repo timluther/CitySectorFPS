@@ -54,7 +54,7 @@ public:
 	size_t		 Count() const {return mCount;} ///<returns the number of indices in use
 	
 	//EDataTypeID  IndexType() const{return TGetTypeID<INDEX_TYPE>::TYPE_ID;}			///<returns the type as per our EDataTypeID
-	unsigned int GLIndexType() const {return TGetGLTypeID<INDEX_TYPE>::TYPE_ID;}	///<returns the equivalent GL type code
+	//unsigned int GLIndexType() const {return TGetGLTypeID<INDEX_TYPE>::TYPE_ID;}	///<returns the equivalent GL type code
 
 	void		 Resize(unsigned int new_size);	 ///<Changes the capactiy of the index buffer
 	
