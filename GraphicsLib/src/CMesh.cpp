@@ -1,4 +1,5 @@
 #include "CMesh.h"
+#include "CIndexBuffer.inl"
 #include "CVector3f.h"
 #include <cstddef>
 #include <math.h>
@@ -6,6 +7,7 @@
 #include "windows.h"
 #include "gl_includes.h"
 #endif
+
 
 #include "Utility.h"
 
@@ -21,7 +23,10 @@ CMesh::CMesh(int vertex_capacity, int index_capacity)
     ,m_orientation(0, 0, 0)
     ,m_scale(1, 1, 1)
     ,m_spin(0, 0, 0)
+	,mVertexBuffer(EVT_P_D4B_N_UV, 100, 0)
+	,mIndexBuffer(100)
 {
+
     create_arrays(vertex_capacity, index_capacity);
 }
 
@@ -301,10 +306,33 @@ void CMesh::update(float dt)
    m_orientation.y += m_spin.y * dt;
    m_orientation.z += m_spin.z * dt;
 }
-
+/*
+&& (mVisible) && mMaterial
+*/
 void CMesh::draw()
 {
 #ifdef ANGLE
+
+	if ((mIndexBuffer.Count() > 0))
+	{
+
+		CheckGLErrors("Error CCmpMesh::Draw ");
+		
+
+		//gShaderData.mModelMatrix = mWorldTransform;
+		//gShaderData.BuildModelViewProjectionMatrix();
+
+		//mMaterial->mVertexAttributes.Use(mVertices.GetGLHandle());
+
+		//mMaterial->BeginDraw();
+
+		mIndexBuffer.Use();
+		glDrawElements(GL_TRIANGLES, mIndexBuffer.Count(), mIndexBuffer.GLIndexType(), 0);
+		//mMaterial->EndDraw();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
+	}
 
 
 #else
@@ -341,4 +369,26 @@ void CMesh::draw()
 void CMesh::calculate_normals()
 {
 
+}
+
+void CMesh::fill_vertex_buffer()
+{
+	mVertexBuffer.CreateGPUBuffer();
+	SVertex_P_N_UV_D4B *vertices = (SVertex_P_N_UV_D4B *)mVertexBuffer.Lock();
+	unsigned short *indices = mIndexBuffer.Lock();
+
+	for (int i = 0; i < m_vertex_count; ++i)
+	{
+		vertices[i].mPosition = m_vertices[i];
+		vertices[i].mNormal	  = m_normals[i];
+		vertices[i].mColour	  = 0xFFFFFFFF;
+	}
+		
+	for (int i = 0; i < m_index_count; ++i)
+	{
+		indices[i] = m_indices[i];
+	}
+	
+	mVertexBuffer.UnLock();
+	mIndexBuffer.UnLock();
 }

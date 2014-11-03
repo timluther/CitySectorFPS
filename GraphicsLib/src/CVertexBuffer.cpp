@@ -2,7 +2,7 @@
 #include "CVertexBuffer.h"
 #include <malloc.h>
 #include <iostream>
-
+#include "UtilGl.h"
 #include <string>
 
 class COGLGraphics;
@@ -102,10 +102,10 @@ class COGLGraphics;
 		}
 		//Flags of form 'EVB_XXXX', e.g. EVB_WRITE_ONLY | EVB_DYNAMIC | EVB_DONT_CLEAR
 		mOglFlags = ((mFlags & EVB_DYNAMIC) != 0)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW;//((mFlags & IVBF_dynamic) == 0) ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW;
-		CheckGLErrors2("Error before sending data to Vertex Buffer Object");
+		CheckGLErrors("Error before sending data to Vertex Buffer Object");
 		if (mData)
 			glBufferData(GL_ARRAY_BUFFER,mCapacity << 2, mData, mOglFlags);
-		CheckGLErrors2("Error creating bertex buffer Object");
+		CheckGLErrors("Error creating bertex buffer Object");
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		return 1;

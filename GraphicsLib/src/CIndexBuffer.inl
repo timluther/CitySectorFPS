@@ -1,4 +1,4 @@
-#include "UtilAssert.h"
+#include "UtilGl.h"
 #include "CIndexBuffer.h"
 #include <string>
 

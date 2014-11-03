@@ -10,7 +10,7 @@
 
 #ifndef CIndexBuffer_h_included
 #define CIndexBuffer_h_included 
-#include "EDataTypeID.h"
+
 #include "gl_includes.h"
 #include "UtilGL.h"
 
@@ -28,7 +28,6 @@ enum EIndexBufferFlags
 	EIB_READ_ONLY     = 0x10,
 	EIB_RESIZE_CAN_CHANGE_DATA_TYPE = 0x20
 };
-
 
 class COGLGraphics;
 
@@ -54,7 +53,7 @@ public:
 	size_t		 Size() const {return mCapacity;} ///<returns the capacity of the index buffer
 	size_t		 Count() const {return mCount;} ///<returns the number of indices in use
 	
-	EDataTypeID  IndexType() const{return TGetTypeID<INDEX_TYPE>::TYPE_ID;}			///<returns the type as per our EDataTypeID
+	//EDataTypeID  IndexType() const{return TGetTypeID<INDEX_TYPE>::TYPE_ID;}			///<returns the type as per our EDataTypeID
 	unsigned int GLIndexType() const {return TGetGLTypeID<INDEX_TYPE>::TYPE_ID;}	///<returns the equivalent GL type code
 
 	void		 Resize(unsigned int new_size);	 ///<Changes the capactiy of the index buffer

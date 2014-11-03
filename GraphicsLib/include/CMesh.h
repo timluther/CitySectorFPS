@@ -2,6 +2,8 @@
 #define CMESH_H
 #include "CVector3f.h"
 #include "CVertexBuffer.h"
+#include "CIndexBuffer.h"
+
 enum EFillMode
 {
     E_BACKFACING,
@@ -43,6 +45,10 @@ class CMesh
 
         void calculate_normals();
 
+		void fill_vertex_buffer();
+
+		CVertexBuffer mVertexBuffer;
+		CIndexBuffer<unsigned short>  mIndexBuffer;
         CVector3f *m_vertices;
         CVector3f *m_normals;
         CVector3f  m_position;
