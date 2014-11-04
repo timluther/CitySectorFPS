@@ -45,7 +45,7 @@ enum EVertexBufferFlags
 class CVertexBuffer
 {
 public:
-	typedef SVertex_P_D4B_N_UV VertexType;
+	typedef SVertex_P_N_UV_D4B VertexType;
 
 	CVertexBuffer(EVertexType format, size_t capacity,unsigned int flags);                                ///< Constructor with format, capacity amd flags
 	~CVertexBuffer();                                                                                     ///< Destructor - releases CPU and GPU data.
