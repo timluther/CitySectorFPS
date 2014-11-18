@@ -63,7 +63,7 @@ void CMesh::create_arrays(int vertex_capacity, int index_capacity)
     if (index_capacity == 0)
         m_indices = NULL;
     else
-        m_indices = new int[index_capacity];
+        m_indices = new unsigned int[index_capacity];
 }
 
 void CMesh::create_pentagon(const CVector3f &c, float radius)
@@ -108,7 +108,7 @@ void CMesh::create_regular_polygon(const CVector3f &c, float radius, float pinch
         throw COutOfBoundsException(__FILE__, __LINE__, 0, m_vertex_count + segment_count, m_vertex_capacity);
     float f_segment_count = float(segment_count);
     unsigned int base_vertex = m_vertex_count;
-    for(int i = 0; i < segment_count; ++i)
+    for(unsigned int i = 0; i < segment_count; ++i)
     {
         float r = (float(i)/f_segment_count)*2.0f*PI;
         m_vertices[m_vertex_count++] = CVector3f(c.x + powf(sinf(r), pinch)*radius, c.y + powf(cosf(r), pinch)*radius, c.z);
@@ -187,7 +187,7 @@ void CMesh::create_regular_polygon_indices(unsigned int base_vertex, unsigned in
         unsigned int c = base_vertex + 1;
         if (fill_mode == E_FRONTFACING)
         {
-            for(int i = 0; i < triangle_count; ++i)
+            for(unsigned int i = 0; i < triangle_count; ++i)
             {
                 m_indices[m_index_count++] = c+1;
                 m_indices[m_index_count++] = c;
@@ -197,7 +197,7 @@ void CMesh::create_regular_polygon_indices(unsigned int base_vertex, unsigned in
         }
         else
         {
-            for(int i = 0; i < triangle_count; ++i)
+            for(unsigned int i = 0; i < triangle_count; ++i)
             {
                 m_indices[m_index_count++] = base_vertex;
                 m_indices[m_index_count++] = c;
@@ -374,17 +374,17 @@ void CMesh::calculate_normals()
 void CMesh::fill_vertex_buffer()
 {
 	mVertexBuffer.CreateGPUBuffer();
-	SVertex_P_N_UV_D4B *vertices = (SVertex_P_N_UV_D4B *)mVertexBuffer.Lock();
+	CVertexBuffer::VertexType *vertices = (CVertexBuffer::VertexType *)mVertexBuffer.Lock();
 	unsigned short *indices = mIndexBuffer.Lock();
 
-	for (int i = 0; i < m_vertex_count; ++i)
+	for (unsigned int i = 0; i < m_vertex_count; ++i)
 	{
 		vertices[i].mPosition = m_vertices[i];
 		vertices[i].mNormal	  = m_normals[i];
 		vertices[i].mColour	  = 0xFFFFFFFF;
 	}
 		
-	for (int i = 0; i < m_index_count; ++i)
+	for (unsigned int i = 0; i < m_index_count; ++i)
 	{
 		indices[i] = m_indices[i];
 	}

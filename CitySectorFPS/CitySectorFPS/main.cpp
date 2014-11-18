@@ -1,8 +1,12 @@
 #include "main.h"
 
 #include "CMesh.h"
+#include "matrix.h"
 
 size_t segment_count, slice_count;
+
+int mvp_matrix_handle = -1;
+Matrix4 mat;
 
 CMesh my_test_mesh;
 CitySectorFPS::CitySectorFPS()
@@ -14,19 +18,28 @@ bool CitySectorFPS::initialize()
 {
 	const std::string vs = SHADER_SOURCE
 		(
+		precision mediump float;
+		uniform mat4 u_mvpmatrix;
 		attribute vec4 vPosition;
+		varying vec3 vWorldPosition;
 	void main()
 	{
 		gl_Position = vPosition;
+		vWorldPosition = vPosition.xyz;
 	}
 	);
 
 	const std::string fs = SHADER_SOURCE
 		(
 		precision mediump float;
+		varying vec3 vWorldPosition;
+		
+		
 	void main()
 	{
-		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		float d = length(vWorldPosition);
+		//d = d < 2.0 ? 0.0 : 1.0; // (d* d*d*d) * 100.0;
+		gl_FragColor = vec4(d, d, 0.0, 1.0);
 	}
 	);
 
@@ -77,7 +90,7 @@ int main(int argc, char **argv)
 {
 	CitySectorFPS app;
 
-
+	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
 	/*try
 	{*/
 		my_test_mesh.create_prism(CVector3f(0, 0, 0), 20, 40, segment_count, slice_count);

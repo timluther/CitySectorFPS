@@ -5,7 +5,7 @@
 //
 
 #include "shader_utils.h"
-
+#include "UtilGL.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -50,6 +50,7 @@ GLuint CompileShader(GLenum type, const std::string &source)
         glGetShaderInfoLog(shader, infoLog.size(), NULL, infoLog.data());
 
         std::cerr << "shader compilation failed: " << infoLog.data();
+		OutputDebugStringA(infoLog.data());
 
         glDeleteShader(shader);
         shader = 0;
@@ -69,6 +70,69 @@ GLuint CompileShaderFromFile(GLenum type, const std::string &sourcePath)
     return CompileShader(type, source);
 }
 
+
+void CheckShader(unsigned int shader)
+{
+	int iLen = 0;
+	GL_CHECK(glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &iLen));
+	if (iLen > 0)
+	{
+		char *sErrorLog = (char*)malloc(iLen);
+		GL_CHECK(glGetShaderInfoLog(shader, iLen, NULL, sErrorLog));
+		printf("Log START:\n%s\nLog END\n\n", sErrorLog);
+		std::cout << sErrorLog << std::endl;
+		OutputDebugStringA(sErrorLog);
+	}
+}
+
+
+
+void CheckLinkStatus(unsigned int mShaderProgram) 
+{
+	GLint link_ok, validate_ok;
+	glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &link_ok);
+
+	char * sErrorLog = NULL;
+	if (!link_ok)
+	{
+		int iLen;
+		GL_CHECK(glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &iLen));
+		if (iLen != 0)
+		{
+			sErrorLog = (char*)malloc(iLen + 1);
+
+			GLsizei actual_size;
+			std::cout << "Problem with Shader \n";
+			GL_CHECK(glGetProgramInfoLog(mShaderProgram, iLen, &actual_size, sErrorLog));
+		}
+		else
+			sErrorLog = "Unknown Error at shader link time.";
+		std::cout << sErrorLog << std::endl;
+		//throw CException(0, 0, mDebugShaderPath, NULL, sErrorLog, XPMERR_LINKER_ERROR, ECEC_SCRIPT, NULL);
+		delete[]sErrorLog;
+		//return false;
+	}
+
+	glValidateProgram(mShaderProgram);
+	glGetProgramiv(mShaderProgram, GL_VALIDATE_STATUS, &validate_ok);
+	if (!validate_ok)
+	{
+		int iLen;
+		glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &iLen);
+		CheckGLErrors("Problems linking shader");
+		sErrorLog = (char*)malloc(iLen + 1);
+		GLsizei actual_size;
+		std::cout << "Problem with Shader Validation \n";
+		GL_CHECK(glGetProgramInfoLog(mShaderProgram, iLen, &actual_size, sErrorLog));
+
+
+		//throw CException(0, 0, mDebugShaderPath, NULL, sErrorLog, XPMERR_LINKER_ERROR, ECEC_SCRIPT, NULL);
+		delete[]sErrorLog;
+		//return false;
+	}
+}
+
+
 GLuint CompileProgram(const std::string &vsSource, const std::string &fsSource)
 {
     GLuint program = glCreateProgram();
@@ -76,6 +140,8 @@ GLuint CompileProgram(const std::string &vsSource, const std::string &fsSource)
     GLuint vs = CompileShader(GL_VERTEX_SHADER, vsSource);
     GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fsSource);
 
+	CheckShader(vs);
+	CheckShader(fs);
     if (vs == 0 || fs == 0)
     {
         glDeleteShader(fs);

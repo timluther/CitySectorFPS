@@ -33,15 +33,15 @@ enum EVertexType
 };
 
 /********************************************//**
-* \brief 	SVertex_P_N_UV_D4B is a vertex struct
+* \brief 	SVertex_P_D4B_N_UV is a vertex struct
 * \details 	
-  SVertex_P_N_UV_D4B contains one position (3D), a normal, one UV coord (2D) and a colour (8bpp RGBA)
+  SVertex_P_D4B_N_UV contains one position (3D), a normal, one UV coord (2D) and a colour (8bpp RGBA)
 ***********************************************/
-struct SVertex_P_N_UV_D4B
+struct SVertex_P_D4B_N_UV
 {
 	enum {VERTEX_TYPE = EVT_P_D4B_N_UV};		
 	
-	SVertex_P_N_UV_D4B(const CVector3f &position, const CVector3f &normal, const CVector2f &uv, unsigned int colour)
+	SVertex_P_D4B_N_UV(const CVector3f &position, const CVector3f &normal, const CVector2f &uv, unsigned int colour)
 		:mPosition(position)
 		,mNormal(normal)
 		,mUv(uv)
@@ -62,7 +62,7 @@ inline size_t get_vertex_size(EVertexType vt)
 {
 	switch (vt)
 	{
-		case EVT_P_D4B_N_UV: return sizeof(SVertex_P_N_UV_D4B);
+		case EVT_P_D4B_N_UV: return sizeof(SVertex_P_D4B_N_UV);
 	}
 	return 0;
 }
@@ -74,7 +74,7 @@ inline size_t get_position_offset(EVertexType vt)
 {
 	switch (vt)
 	{
-		case EVT_P_D4B_N_UV: return offsetof_macro(SVertex_P_N_UV_D4B, mPosition);
+		case EVT_P_D4B_N_UV: return offsetof_macro(SVertex_P_D4B_N_UV, mPosition);
 	}
 	return 0;
 }
@@ -84,7 +84,7 @@ inline size_t get_uv_offset(EVertexType vt, size_t channel)
 {
 	switch (vt)
 	{
-		case EVT_P_D4B_N_UV: return offsetof_macro(SVertex_P_N_UV_D4B, mUv);
+		case EVT_P_D4B_N_UV: return offsetof_macro(SVertex_P_D4B_N_UV, mUv);
 		
 	}
 	return 0;
@@ -96,7 +96,7 @@ inline size_t get_normal_offset(EVertexType vt)
 {
 	switch (vt)
 	{
-		case EVT_P_D4B_N_UV: return offsetof_macro(SVertex_P_N_UV_D4B, mNormal);
+		case EVT_P_D4B_N_UV: return offsetof_macro(SVertex_P_D4B_N_UV, mNormal);
 		
 	}
 	return 0;
