@@ -55,10 +55,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>angle_util.lib;libEGL.lib;libGLESv2.lib;preprocessor.lib;translator.lib;translator_lib.lib;translator_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>angle_util.lib;libEGL.lib;libGLESv2.lib;preprocessor.lib;translator.lib;translator_lib.lib;translator_static.lib;FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\angle\projects\build\Debug_Win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\angle\projects\build\Debug_Win32\lib;..\FreeImage; %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,6 +77,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\angle\projects\build\Release_Win32\lib;..\FreeImage; %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -96,6 +99,7 @@
     <ClCompile Include="..\src\random_utils.cpp" />
     <ClCompile Include="..\src\SampleApplication.cpp" />
     <ClCompile Include="..\src\shader_utils.cpp" />
+    <ClCompile Include="..\src\TextureManager.cpp" />
     <ClCompile Include="..\src\texture_utils.cpp" />
     <ClCompile Include="..\src\tga_utils.cpp" />
     <ClCompile Include="..\src\UtilGL.cpp" />
@@ -116,6 +120,7 @@
     <ClInclude Include="..\include\random_utils.h" />
     <ClInclude Include="..\include\SampleApplication.h" />
     <ClInclude Include="..\include\shader_utils.h" />
+    <ClInclude Include="..\include\TextureManager.h" />
     <ClInclude Include="..\include\texture_utils.h" />
     <ClInclude Include="..\include\tga_utils.h" />
     <ClInclude Include="..\include\Utility.h" />
