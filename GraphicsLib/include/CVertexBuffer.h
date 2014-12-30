@@ -42,11 +42,12 @@ enum EVertexBufferFlags
  * This class handles this task for vertex information as well as providing some useful functionality for applications
  * using vertex buffers.
 ***********************************************/
+
 class CVertexBuffer
 {
 public:
-	typedef SVertex_P_N_UV_D4B VertexType;
-
+	typedef SVertex_P_D4B_N_UV VertexType;
+		
 	CVertexBuffer(EVertexType format, size_t capacity,unsigned int flags);                                ///< Constructor with format, capacity amd flags
 	~CVertexBuffer();                                                                                     ///< Destructor - releases CPU and GPU data.
 	unsigned int GetFlags() const {return mFlags;}                                                       ///< Returns our flags (see 'EVertexBufferFlags')

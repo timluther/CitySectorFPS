@@ -55,11 +55,11 @@ class CMesh
         CVector3f  m_orientation;
         CVector3f  m_scale;
         CVector3f  m_spin;
-        int       *m_indices;
-        int        m_vertex_count;
-        int        m_index_count;
-        int        m_index_capacity;
-        int        m_vertex_capacity;
+        unsigned int       *m_indices;
+        unsigned int        m_vertex_count;
+        unsigned int        m_index_count;
+        unsigned int        m_index_capacity;
+        unsigned int        m_vertex_capacity;
 };
 
 #endif
