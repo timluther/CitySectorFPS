@@ -9,7 +9,7 @@ size_t segment_count, slice_count;
 int mvp_matrix_handle = -1;
 Matrix4 mat;
 
-CMesh my_test_mesh;
+CMesh *my_test_mesh = NULL;
 CitySectorFPS::CitySectorFPS()
 	: SampleApplication("HelloTriangle", 1280, 720)
 {
@@ -23,27 +23,32 @@ struct sShaderHandles
 	int aTexCoord;
 	int aPosition;
 	int TextureSampler;
-
+	int MaterialColour;
 
 	void Init(int ProgramHandle)
 	{
+		MaterialColour = glGetUniformLocation(ProgramHandle, "MaterialColour");
 		uMvpMatrix = glGetUniformLocation(ProgramHandle, "u_mvpmatrix");		
 		TextureSampler = glGetUniformLocation(ProgramHandle, "TextureSampler");
 
-		aTexCoord = glGetUniformLocation(ProgramHandle, "aTexCoord");
-		aPosition = glGetUniformLocation(ProgramHandle, "aPosition");
+		aTexCoord = glGetAttribLocation(ProgramHandle, "aTexCoord");
+		aPosition = glGetAttribLocation(ProgramHandle, "aPosition");
 	}
 
 	void Use(GLfloat *vertices, GLfloat *texturecoordinates, Matrix4 &mat, int texid)
 	{
+		CheckGLErrors("Error has occured lol");
 		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-		glEnableVertexAttribArray(aPosition);
+		if (aPosition != -1)
+			glEnableVertexAttribArray(aPosition);
 		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texturecoordinates);
-		glEnableVertexAttribArray(aTexCoord);
-
+		if (aTexCoord != -1)
+			glEnableVertexAttribArray(aTexCoord);
+		CheckGLErrors("Error has occured lol");
 		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&mat);
+		glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
 		glUniform1i(TextureSampler, texid);
-
+		CheckGLErrors("Error has occured lol");
 
 	}
 };
@@ -70,17 +75,20 @@ bool CitySectorFPS::initialize()
 
 	const std::string fs = SHADER_SOURCE
 		(
-		uniform sampler2D TextureSampler;
 		precision mediump float;
+		uniform vec4	  MaterialColour;
+		uniform sampler2D TextureSampler;
+
 		varying vec3 vWorldPosition;
 		varying vec2 vTexCoord;
 		
 	void main()
 	{
 		float d = length(vWorldPosition);
-		vec4 texcolour = texture2D(TextureSampler, vTexCoord);
+		vec4 texcolour = texture2D(TextureSampler, vTexCoord) * MaterialColour;
 		//d = d < 2.0 ? 0.0 : 1.0; // (d* d*d*d) * 100.0;
-		gl_FragColor = vec4(d, d, 0.0, 1.0) * texcolour;
+		//vec4(d, d, 0.0, 1.0) 
+		gl_FragColor = vec4(0.1, 0.1, 0.1, 1.0) + (vec4(1.0, 1.0, 1.0, 1.0) * texcolour);
 	}
 	);
 
@@ -93,6 +101,12 @@ bool CitySectorFPS::initialize()
 	gShaderHandles.Init(mProgram);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	my_test_mesh = new CMesh();
+	my_test_mesh->create_prism(CVector3f(0, 0, 0), 20, 40, segment_count, slice_count);
+	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
+	//TODO: make sure this uses relative paths some day
+	TextureManager::Inst()->LoadTexture("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\testimage.png", 0);
 
 	return true;
 }
@@ -123,16 +137,17 @@ void CitySectorFPS::draw()
 
 	// Clear the color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
-	TextureManager::Inst()->BindTexture(0);
+	glBindTexture(GL_TEXTURE_2D, 1);
+	//TextureManager::Inst()->BindTexture(0);
 	// Use the program object
 	glUseProgram(mProgram);
-	TextureManager::Inst()->BindTexture(0);
-
+	//TextureManager::Inst()->BindTexture(0);
+	CheckGLErrors("Error has occured lol 1");
 	gShaderHandles.Use(vertices, texcoords, mat, 0);
-
+	CheckGLErrors("Error has occured lol" );
 	// Load the vertex data
 	
-	my_test_mesh.draw();
+	my_test_mesh->draw();
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
@@ -142,14 +157,12 @@ int main(int argc, char **argv)
 {
 	CitySectorFPS app;
 	
-	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
-	//TODO: make sure this uses relative paths some day
-	TextureManager::Inst()->LoadTexture("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\testimage.png", 0);
+	
 
 	
 	/*try
 	{*/
-		my_test_mesh.create_prism(CVector3f(0, 0, 0), 20, 40, segment_count, slice_count);
+		
 	/*}
 	catch (COutOfBoundsException e)
 	{
@@ -160,6 +173,9 @@ int main(int argc, char **argv)
 	}*/
 
 
-	app.initialize();
+	//app.initialize();
+
+
+	
 	return app.run();
 }

@@ -13,6 +13,7 @@
 
 bool CheckGLErrors(const char* argMessage);
 bool CheckGLThrow(const char* argFilename, const char* argMessage);
+void PerformShaderErrorCheck(GLuint Shader);
 
 #define GL_CHECK(x) \
 	x; \
