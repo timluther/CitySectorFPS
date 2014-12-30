@@ -90,8 +90,26 @@ bool TextureManager::LoadTexture(const char* filename, const unsigned int texID,
 	//bind to the new texture ID
 	glBindTexture(GL_TEXTURE_2D, gl_texID);
 	//store the texture data for OpenGL use
-	glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height,
-		border, image_format, GL_UNSIGNED_BYTE, bits);
+
+
+
+
+	char *data = new char[width * height * 4];
+
+	int c = 0;
+	for (int y = 0; y < height; ++y)
+		for (int x = 0; x < height; ++x)
+		{
+			
+			data[c] = x * y;
+			data[c + 1] = x;
+			data[c + 2] = y;
+			data[c + 3] = 255;
+			c += 4;
+		}
+	glBindTexture(GL_TEXTURE_2D, m_texID[texID]);
+
+	glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, border, image_format, GL_UNSIGNED_BYTE, data);
 
 	//Free FreeImage's copy of the data
 	FreeImage_Unload(dib);

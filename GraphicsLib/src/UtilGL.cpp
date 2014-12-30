@@ -47,12 +47,39 @@ const char *GetErrorCodeText(unsigned int code)
 	return glErrorString;
 }
 
+
+/********************************************//**
+* \brief 	PerformShaderErrorCheck
+* \param 	Shader[in] <TODO>
+* \details 	<TODO>
+***********************************************/
+void PerformShaderErrorCheck(GLuint Shader)
+{
+	GLint iLen;
+	char *sDebugSource = NULL;
+	char *sErrorLog = NULL;
+	if (Shader != 0)
+	{
+		glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &iLen);
+		sErrorLog = new char[iLen + 1];
+		GLsizei actual_size;
+		std::cout << "Problem with Shader \n";
+		glGetShaderInfoLog(Shader, iLen, &actual_size, sErrorLog);
+		if (sErrorLog)
+		{
+			std::cout << sErrorLog << std::endl;
+			delete[] sErrorLog;
+		}
+	}	
+}
+
 bool CheckGLErrors(const char* argMessage)
 {
 	int glErr = glGetError();
 	if (glErr)
 	{				
-		std::cout << " GL ERROR " << glErr << "(" <<GetErrorCodeText(glErr) <<"):" << argMessage  << std::endl;
+		const char * outstr = GetErrorCodeText(glErr);
+		std::cout << " GL ERROR " << glErr << "(" << outstr <<"):" << argMessage  << std::endl;
 		return false;
 	}
 	return true;

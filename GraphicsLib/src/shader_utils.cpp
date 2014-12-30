@@ -41,7 +41,7 @@ GLuint CompileShader(GLenum type, const std::string &source)
     GLint compileResult;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compileResult);
 
-    if (compileResult == 0)
+    if (compileResult != GL_TRUE)
     {
         GLint infoLogLength;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -136,12 +136,13 @@ void CheckLinkStatus(unsigned int mShaderProgram)
 GLuint CompileProgram(const std::string &vsSource, const std::string &fsSource)
 {
     GLuint program = glCreateProgram();
-
+	program = glCreateProgram();
     GLuint vs = CompileShader(GL_VERTEX_SHADER, vsSource);
+	PerformShaderErrorCheck(vs);
+	
     GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fsSource);
+	PerformShaderErrorCheck(fs);
 
-	CheckShader(vs);
-	CheckShader(fs);
     if (vs == 0 || fs == 0)
     {
         glDeleteShader(fs);
