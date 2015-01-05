@@ -172,7 +172,7 @@ void CMesh::create_prism(const CVector3f &c, float radius, float length, unsigne
     }
 }
 
-void CMesh::add_prism_element_count(unsigned int segment_count, unsigned int &vertex_count, unsigned int &triangle_count, unsigned int slice_count)
+void CMesh::add_prism_element_count(unsigned int segment_count, unsigned int slice_count, unsigned int &vertex_count, unsigned int &triangle_count)
 {
     vertex_count += segment_count*(slice_count + 1) + 1;
     triangle_count += ((segment_count - 2)*2); // this is for the end caps
@@ -371,7 +371,7 @@ void CMesh::calculate_normals()
 
 }
 
-void CMesh::fill_vertex_buffer()
+void CMesh::fill_GPU_buffers()
 {
 	mVertexBuffer.CreateGPUBuffer();
 	CVertexBuffer::VertexType *vertices = (CVertexBuffer::VertexType *)mVertexBuffer.Lock();
@@ -380,7 +380,8 @@ void CMesh::fill_vertex_buffer()
 	for (unsigned int i = 0; i < m_vertex_count; ++i)
 	{
 		vertices[i].mPosition = m_vertices[i];
-		vertices[i].mNormal	  = m_normals[i];
+		if (m_normals)
+			vertices[i].mNormal	  = m_normals[i];
 		vertices[i].mColour	  = 0xFFFFFFFF;
 	}
 		

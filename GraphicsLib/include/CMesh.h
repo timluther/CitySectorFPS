@@ -29,7 +29,7 @@ class CMesh
 
         void create_prism(const CVector3f &c, float radius, float length, unsigned int segment_count, unsigned int slice_count);
 
-        void add_prism_element_count(unsigned int segment_count, unsigned int &vertex_count, unsigned int &triangle_count, unsigned int slice_count);
+		static void add_prism_element_count(unsigned int segment_count, unsigned int slice_count, unsigned int &vertex_count, unsigned int &triangle_count);
 
         void create_regular_polygon_indices(unsigned int base_vertex, unsigned int segment_count, EFillMode fill_mode);
 
@@ -45,7 +45,7 @@ class CMesh
 
         void calculate_normals();
 
-		void fill_vertex_buffer();
+		void fill_GPU_buffers();
 
 		CVertexBuffer mVertexBuffer;
 		CIndexBuffer<unsigned short>  mIndexBuffer;

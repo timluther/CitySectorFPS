@@ -4,7 +4,7 @@
 #include "matrix.h"
 #include "../FreeImage/FreeImage.h"
 #include "TextureManager.h"
-size_t segment_count, slice_count;
+size_t segment_count = 10, slice_count = 10;
 
 int mvp_matrix_handle = -1;
 Matrix4 mat;
@@ -89,8 +89,7 @@ bool CitySectorFPS::initialize()
 		vec4 texcolour = texture2D(TextureSampler, vTexCoord, -100.0) * MaterialColour;
 		//d = d < 2.0 ? 0.0 : 1.0; // (d* d*d*d) * 100.0;
 		//vec4(d, d, 0.0, 1.0) 
-		gl_FragColor =  texcolour + vec4(0.1, 0.01, 0.1, 0.1);
-		gl_FragColor.xy += vTexCoord.xy;
+		gl_FragColor =  texcolour.zyxw;		
 		
 	}
 	);
@@ -106,11 +105,17 @@ bool CitySectorFPS::initialize()
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	my_test_mesh = new CMesh();
+	
+	unsigned int v_count = 0;
+	unsigned int t_count = 0;
+	my_test_mesh->add_prism_element_count(segment_count, slice_count, v_count, t_count);
+	my_test_mesh->create_arrays(v_count, t_count * 3);
 	my_test_mesh->create_prism(CVector3f(0, 0, 0), 20, 40, segment_count, slice_count);
+	my_test_mesh->fill_GPU_buffers();
 	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
 	//TODO: make sure this uses relative paths some day
-	TextureManager::Inst()->LoadTexture("E:\\prog\\BrythonsCode\\CitySectorFPS\\Debug\\testimage.png", 0);
-
+	TextureManager::Inst()->LoadTexture("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\testimage.png", 0);
+	
 	return true;
 }
 
@@ -123,39 +128,44 @@ void CitySectorFPS::draw()
 {
 	GLfloat vertices[] =
 	{
-		0.0f, 0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
 	};
 
 	GLfloat texcoords[] =
 	{
 		0.0, 0.0,
 		1.0, 0.0,
-		1.0, 1.0
+		1.0, 1.0,
+		0.0, 1.0,
 	};
 
 	// Set the viewport
 	glViewport(0, 0, getWindow()->getWidth(), getWindow()->getHeight());
 
 	// Clear the color buffer
+	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glActiveTexture(GL_TEXTURE0);	
-	
+	glActiveTexture(GL_TEXTURE0);
+
 	// Use the program object
 	glUseProgram(mProgram);
 
-	
+
 	//TextureManager::Inst()->BindTexture(0);
 	CheckGLErrors("Error has occured lol 1");
 	gShaderHandles.Use(vertices, texcoords, mat, 0);
-	CheckGLErrors("Error has occured lol" );
+	CheckGLErrors("Error has occured lol");
 
 	// Load the vertex data
 	TextureManager::Inst()->BindTexture(0, 0);
 	my_test_mesh->draw();
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	//static unsigned char indices[] = {0, 1, 3, 3, 1, 2};
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 
