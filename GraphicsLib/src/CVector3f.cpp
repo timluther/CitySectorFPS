@@ -36,7 +36,7 @@ CVector3f CVector3f::normal()const
     }
     else
     {
-        return CVector3f{0, 0, 0};
+        return CVector3f(0, 0, 0);
     }
 }
 

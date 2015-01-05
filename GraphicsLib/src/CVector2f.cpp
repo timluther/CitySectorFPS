@@ -23,7 +23,7 @@ CVector2f CVector2f::normal()const
 	}
 	else
 	{
-		return CVector2f{ 0, 0 };
+		return CVector2f( 0, 0 );
 	}
 }
 

@@ -58,7 +58,7 @@ void PerformShaderErrorCheck(GLuint Shader)
 	GLint iLen;
 	char *sDebugSource = NULL;
 	char *sErrorLog = NULL;
-	if (Shader != 0)
+	if (Shader == 0)
 	{
 		glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &iLen);
 		sErrorLog = new char[iLen + 1];
