@@ -14,8 +14,24 @@ CitySectorFPS::CitySectorFPS()
 	: SampleApplication("HelloTriangle", 1280, 720)
 {
 }
+/*
+struct SVertex_P_D4B_N_UV
+{
+	enum { VERTEX_TYPE = EVT_P_D4B_N_UV };
 
+	SVertex_P_D4B_N_UV(const CVector3f &position, const CVector3f &normal, const CVector2f &uv, unsigned int colour)
+		:mPosition(position)
+		, mNormal(normal)
+		, mUv(uv)
+		, mColour(colour)
+	{
+	}
 
+	CVector3f mPosition;   //0
+	CVector3f mNormal;     //12
+	CVector2f mUv;         //24
+	unsigned int mColour;  //32
+};*/
 
 struct sShaderHandles
 {
@@ -52,6 +68,32 @@ struct sShaderHandles
 		CheckGLErrors("Error has occured lol");
 
 	}
+
+	void Deinit()
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, 0);		
+	}
+	
+	void Use(const CVertexBuffer &buffer, Matrix4 &mat, int texid)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, buffer.GetGLHandle());
+		CheckGLErrors("Error has occured lol");
+	
+		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		if (aPosition != -1)
+			glEnableVertexAttribArray(aPosition);
+		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
+		if (aTexCoord != -1)
+			glEnableVertexAttribArray(aTexCoord);
+		CheckGLErrors("Error has occured lol");
+		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&mat);
+		glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
+		unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
+		glUniform1i(TextureSampler, 0);
+		CheckGLErrors("Error has occured lol");
+
+	}
+
 };
 
 sShaderHandles gShaderHandles;
@@ -109,8 +151,8 @@ bool CitySectorFPS::initialize()
 	unsigned int v_count = 0;
 	unsigned int t_count = 0;
 	my_test_mesh->add_prism_element_count(segment_count, slice_count, v_count, t_count);
-	my_test_mesh->create_arrays(v_count, t_count * 3);
-	my_test_mesh->create_prism(CVector3f(0, 0, 0), 20, 40, segment_count, slice_count);
+	my_test_mesh->create_arrays(v_count, t_count * 6);
+	my_test_mesh->create_prism(CVector3f(0, 0, 0), -20, 10, segment_count, slice_count);
 	my_test_mesh->fill_GPU_buffers();
 	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
 	//TODO: make sure this uses relative paths some day
@@ -161,11 +203,15 @@ void CitySectorFPS::draw()
 
 	// Load the vertex data
 	TextureManager::Inst()->BindTexture(0, 0);
-	my_test_mesh->draw();
+	static unsigned char indices[] = { 0, 1, 3, 3, 1, 2 };
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-	//static unsigned char indices[] = {0, 1, 3, 3, 1, 2};
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
-	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	gShaderHandles.Use(my_test_mesh->mVertexBuffer, mat, 0);
+
+	my_test_mesh->draw();
+	gShaderHandles.Deinit();
+
 }
 
 

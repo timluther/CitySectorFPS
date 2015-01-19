@@ -66,7 +66,7 @@ public:
 	void		 EnsureCapacity(size_t count);                                                            ///< Ensure that the vertex buffer has at least 'count' capacity
 	template <class VERTEX_TYPE>                                                                          ///< Templatized function for adding a vertex (defined below this class)
 	void		  AddVertex(const VERTEX_TYPE &vertex);
-	
+	size_t					   mCount;			///<number of vertices in use
 protected:		
 	unsigned int			   mGlHandle;		///<The opengl handle to the GPU vertex buffer
 	unsigned int			   mFlags;			///<Flags of form 'EVB_XXXX', e.g. EVB_WRITE_ONLY | EVB_DYNAMIC | EVB_DONT_CLEAR
@@ -74,7 +74,7 @@ protected:
 	size_t					   mVertexSize;   ///<Size (in bytes) of each vertex
 	size_t					   mLockSize;		///<Size of data that was locked - useful for only copying a portion of the buffer
 	size_t					   mLockOffset;	///<Offset in to the buffer to lock
-	size_t					   mCount;			///<number of vertices in use
+	
 	EVertexType				   mFormat;	 	///<Whislt there's only one vertex type at time of writing, this is built for expansion
 	size_t					   mCapacity;      ///<Total capacity of vertex buffer
 	void					 * mData;			///<Pointer to CPU side vertex buffer data

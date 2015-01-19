@@ -91,7 +91,7 @@ class COGLGraphics;
 	{
 		
 		mVertexSize=  get_vertex_size(mFormat);
-		if ((mFlags & EVB_KEEP_BUFFER_FLAGS) != 0)
+		if (!mData && (mFlags & EVB_KEEP_BUFFER_FLAGS) != 0)
 			mData = malloc(mVertexSize * mCapacity);
 
 		glGenBuffers(1, &mGlHandle);
@@ -104,7 +104,7 @@ class COGLGraphics;
 		mOglFlags = ((mFlags & EVB_DYNAMIC) != 0)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW;//((mFlags & IVBF_dynamic) == 0) ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW;
 		CheckGLErrors("Error before sending data to Vertex Buffer Object");
 		if (mData)
-			glBufferData(GL_ARRAY_BUFFER,mCapacity << 2, mData, mOglFlags);
+			glBufferData(GL_ARRAY_BUFFER,mCapacity * mVertexSize, mData, mOglFlags);
 		CheckGLErrors("Error creating bertex buffer Object");
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 

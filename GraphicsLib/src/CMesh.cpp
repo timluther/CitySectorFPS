@@ -14,7 +14,7 @@
 #define PI 3.14159265358979f
 
 CMesh::CMesh(int vertex_capacity, int index_capacity)
-    :m_vertices(NULL)
+	:m_vertices(NULL)
     ,m_normals(NULL)
     ,m_indices(NULL)
     ,m_vertex_count(0)
@@ -23,7 +23,7 @@ CMesh::CMesh(int vertex_capacity, int index_capacity)
     ,m_orientation(0, 0, 0)
     ,m_scale(1, 1, 1)
     ,m_spin(0, 0, 0)
-	,mVertexBuffer(EVT_P_D4B_N_UV, 100, 0)
+	,mVertexBuffer(EVT_P_D4B_N_UV, 100, EVB_KEEP_BUFFER_FLAGS)
 	,mIndexBuffer(100)
 {
 
@@ -326,14 +326,15 @@ void CMesh::draw()
 
 		//mMaterial->BeginDraw();
 		// mIndexBuffer.GLIndexType()
+		
 		mIndexBuffer.Use();
 		glDrawElements(GL_TRIANGLES, mIndexBuffer.Count(), GL_UNSIGNED_SHORT, 0);
 		//mMaterial->EndDraw();
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
+		
+		
 	}
-
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 #else
 	glPushMatrix();
@@ -373,7 +374,8 @@ void CMesh::calculate_normals()
 
 void CMesh::fill_GPU_buffers()
 {
-	mVertexBuffer.CreateGPUBuffer();
+	mIndexBuffer.EnsureCapacity(m_index_count * 3);
+	mVertexBuffer.EnsureCapacity(m_vertex_count);
 	CVertexBuffer::VertexType *vertices = (CVertexBuffer::VertexType *)mVertexBuffer.Lock();
 	unsigned short *indices = mIndexBuffer.Lock();
 
@@ -392,4 +394,6 @@ void CMesh::fill_GPU_buffers()
 	
 	mVertexBuffer.UnLock();
 	mIndexBuffer.UnLock();
+	mVertexBuffer.mCount = m_vertex_count;
+	mIndexBuffer.mCount = m_index_count;
 }
