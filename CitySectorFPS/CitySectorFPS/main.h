@@ -11,6 +11,7 @@ public:
 
 private:
 	GLuint mProgram;
+	GLuint mLightingProgram;
 };
 
 int main(int argc, char **argv);

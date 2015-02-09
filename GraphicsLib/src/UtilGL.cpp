@@ -61,15 +61,20 @@ void PerformShaderErrorCheck(GLuint Shader)
 	if (Shader == 0)
 	{
 		glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &iLen);
-		sErrorLog = new char[iLen + 1];
-		GLsizei actual_size;
-		std::cout << "Problem with Shader \n";
-		glGetShaderInfoLog(Shader, iLen, &actual_size, sErrorLog);
-		if (sErrorLog)
+		if (iLen >= 0)
 		{
-			std::cout << sErrorLog << std::endl;
-			delete[] sErrorLog;
+			sErrorLog = new char[iLen + 1];
+			GLsizei actual_size;
+			std::cout << "Problem with Shader \n";
+			glGetShaderInfoLog(Shader, iLen, &actual_size, sErrorLog);
+			if (sErrorLog)
+			{
+				std::cout << sErrorLog << std::endl;
+				delete[] sErrorLog;
+			}
 		}
+		else
+			std::cout << "Could not get length of shader error buffer " << std::endl;
 	}	
 }
 

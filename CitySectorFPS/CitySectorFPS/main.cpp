@@ -4,10 +4,13 @@
 #include "matrix.h"
 #include "../FreeImage/FreeImage.h"
 #include "TextureManager.h"
+#include <stdio.h>
 size_t segment_count = 10, slice_count = 10;
 
 int mvp_matrix_handle = -1;
+int m_matrix_handle = -1;
 Matrix4 mat;
+Matrix4 objectmat;
 
 CMesh *my_test_mesh = NULL;
 CitySectorFPS::CitySectorFPS()
@@ -36,35 +39,46 @@ struct SVertex_P_D4B_N_UV
 struct sShaderHandles
 {
 	int uMvpMatrix;
+	int uMMatrix;
 	int aTexCoord;
 	int aPosition;
+	int aNormal;
 	int TextureSampler;
 	int MaterialColour;
 
 	void Init(int ProgramHandle)
 	{
 		MaterialColour = glGetUniformLocation(ProgramHandle, "MaterialColour");
+		uMMatrix = glGetUniformLocation(ProgramHandle, "u_mmatrix");
 		uMvpMatrix = glGetUniformLocation(ProgramHandle, "u_mvpmatrix");		
 		TextureSampler = glGetUniformLocation(ProgramHandle, "TextureSampler");
-
+		aNormal = glGetAttribLocation(ProgramHandle, "aNormal");
 		aTexCoord = glGetAttribLocation(ProgramHandle, "aTexCoord");
 		aPosition = glGetAttribLocation(ProgramHandle, "aPosition");
 	}
 
-	void Use(GLfloat *vertices, GLfloat *texturecoordinates, Matrix4 &mat, int texid)
+	void Use(GLfloat *vertices, GLfloat *texturecoordinates, GLfloat *normals, Matrix4 &MVPmatrix, Matrix4 &WorldMatrix, int texid)
 	{
 		CheckGLErrors("Error has occured lol");
-		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, vertices);
+		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, vertices);		
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
+		if (aNormal != -1)
+			glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, 0, normals);
 		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texturecoordinates);
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol");
-		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&mat);
-		glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
+		if (uMvpMatrix != -1)
+			glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&MVPmatrix);
+
+		if (uMMatrix != -1)
+			glUniformMatrix4fv(uMMatrix, 1, false, (const float*)&WorldMatrix);
+		if (MaterialColour != -1)
+			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
 		unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
-		glUniform1i(TextureSampler, 0);
+		if (TextureSampler != -1)
+			glUniform1i(TextureSampler, 0);
 		CheckGLErrors("Error has occured lol");
 
 	}
@@ -97,53 +111,59 @@ struct sShaderHandles
 };
 
 sShaderHandles gShaderHandles;
+sShaderHandles gLitShaderHandles;
+
+//end of file marker is found
+inline long fsize_eof(FILE *f)
+{
+	long old_pos = ftell(f);
+	fseek(f, 0, SEEK_END);
+	long ret = ftell(f);
+	fseek(f, old_pos, SEEK_SET);
+	return ret;
+}
+
+
+const std::string &block_read_file(FILE *f, std::string &ret)
+{	
+	size_t len = fsize_eof(f);
+	char *str = new char[len + 1];
+	
+	fread((void*)str, len, 1, f);
+	str[len] = 0;
+	ret = str;
+	return ret;
+}
+
+std::string LoadFileAsString(const char *filename)
+{
+	std::string str;
+	FILE *f = fopen(filename, "rb");
+	if (f)
+	{
+		block_read_file(f, str);
+		fclose(f);
+	}
+	return str;
+}
 
 bool CitySectorFPS::initialize()
-{
-	const std::string vs = SHADER_SOURCE
-		(
-		precision mediump float;
-		uniform mat4 u_mvpmatrix;
-		attribute vec2 aTexCoord;
-		attribute vec4 aPosition;
-		varying vec3 vWorldPosition;
-		varying vec2 vTexCoord;
-	void main()
-	{
-		gl_Position = aPosition;
-		vWorldPosition = aPosition.xyz;
-		vTexCoord = aTexCoord;
-	}
-	);
-
-	const std::string fs = SHADER_SOURCE
-		(
-		precision mediump float;
-		uniform vec4	  MaterialColour;
-		uniform sampler2D TextureSampler;
-
-		varying vec3 vWorldPosition;
-		varying vec2 vTexCoord;
-		
-	void main()
-	{
-		float d = length(vWorldPosition);
-		vec4 texcolour = texture2D(TextureSampler, vTexCoord, -100.0) * MaterialColour;
-		//d = d < 2.0 ? 0.0 : 1.0; // (d* d*d*d) * 100.0;
-		//vec4(d, d, 0.0, 1.0) 
-		gl_FragColor =  texcolour.zyxw;		
-		
-	}
-	);
-
+{	
+	std::string vs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\simpleshader.vert");
+	std::string fs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\simpleshader.frag");
 	mProgram = CompileProgram(vs, fs);
+
+	vs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\littextured.vert");
+	fs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\littextured.frag");
+	mLightingProgram = CompileProgram(vs, fs);
+
 	if (!mProgram)
 	{
 		return false;
 	}
 
 	gShaderHandles.Init(mProgram);
-
+	gLitShaderHandles.Init(mLightingProgram);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	my_test_mesh = new CMesh();
@@ -195,10 +215,9 @@ void CitySectorFPS::draw()
 	// Use the program object
 	glUseProgram(mProgram);
 
-
 	//TextureManager::Inst()->BindTexture(0);
 	CheckGLErrors("Error has occured lol 1");
-	gShaderHandles.Use(vertices, texcoords, mat, 0);
+	gShaderHandles.Use(vertices, texcoords, NULL, mat, Matrix4(), 0);
 	CheckGLErrors("Error has occured lol");
 
 	// Load the vertex data
@@ -207,11 +226,9 @@ void CitySectorFPS::draw()
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-	gShaderHandles.Use(my_test_mesh->mVertexBuffer, mat, 0);
-
+	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, mat, 0);
 	my_test_mesh->draw();
 	gShaderHandles.Deinit();
-
 }
 
 

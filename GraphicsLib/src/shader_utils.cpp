@@ -138,9 +138,11 @@ GLuint CompileProgram(const std::string &vsSource, const std::string &fsSource)
     GLuint program = glCreateProgram();
 	program = glCreateProgram();
     GLuint vs = CompileShader(GL_VERTEX_SHADER, vsSource);
+	std::cout << "Checking vertex shader " << std::endl;
 	PerformShaderErrorCheck(vs);
 	
     GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fsSource);
+	std::cout << "Checking fragment shader " << std::endl;
 	PerformShaderErrorCheck(fs);
 
     if (vs == 0 || fs == 0)
