@@ -5,6 +5,8 @@
 #include "../FreeImage/FreeImage.h"
 #include "TextureManager.h"
 #include <stdio.h>
+#include <iostream>
+#include <sstream>
 size_t segment_count = 10, slice_count = 10;
 
 int mvp_matrix_handle = -1;
@@ -59,7 +61,7 @@ struct sShaderHandles
 
 	void Use(GLfloat *vertices, GLfloat *texturecoordinates, GLfloat *normals, Matrix4 &MVPmatrix, Matrix4 &WorldMatrix, int texid)
 	{
-		CheckGLErrors("Error has occured lol");
+		CheckGLErrors("Error has occured lol3");
 		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, vertices);		
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
@@ -68,7 +70,7 @@ struct sShaderHandles
 		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texturecoordinates);
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
-		CheckGLErrors("Error has occured lol");
+		CheckGLErrors("Error has occured lol4");
 		if (uMvpMatrix != -1)
 			glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&MVPmatrix);
 
@@ -79,7 +81,7 @@ struct sShaderHandles
 		unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
 		if (TextureSampler != -1)
 			glUniform1i(TextureSampler, 0);
-		CheckGLErrors("Error has occured lol");
+		CheckGLErrors("Error has occured lol5");
 
 	}
 
@@ -91,20 +93,26 @@ struct sShaderHandles
 	void Use(const CVertexBuffer &buffer, Matrix4 &mat, int texid)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.GetGLHandle());
-		CheckGLErrors("Error has occured lol");
+		CheckGLErrors("Error has occured lol6");
 	
 		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
+		CheckGLErrors("Error has occured lol9");
 		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
-		CheckGLErrors("Error has occured lol");
+		CheckGLErrors("Error has occured lol7");
 		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&mat);
-		glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
-		unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
-		glUniform1i(TextureSampler, 0);
-		CheckGLErrors("Error has occured lol");
+		CheckGLErrors("Error has occured lol7b");
+		if (MaterialColour != -1)
+			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
+		if (TextureSampler != -1)
+		{
+			unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
+			glUniform1i(TextureSampler, 0);
+		}
+		CheckGLErrors("Error has occured lol8");
 
 	}
 
@@ -147,15 +155,23 @@ std::string LoadFileAsString(const char *filename)
 	return str;
 }
 
+
+int LoadShadersFromFile(const char *filename)
+{
+	std::string filebase = std::string(filename);
+	std::string vs = LoadFileAsString((filebase + ".vert").c_str());
+	std::string fs = LoadFileAsString((filebase + ".frag").c_str());
+	std::cout << "Attempting to load shaders from " << filebase << std::endl;
+	return CompileProgram(vs, fs);
+
+}
+
+
 bool CitySectorFPS::initialize()
 {	
-	std::string vs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\simpleshader.vert");
-	std::string fs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\simpleshader.frag");
-	mProgram = CompileProgram(vs, fs);
-
-	vs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\littextured.vert");
-	fs = LoadFileAsString("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\littextured.frag");
-	mLightingProgram = CompileProgram(vs, fs);
+	
+	mProgram = LoadShadersFromFile("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\simpleshader");
+	mLightingProgram = LoadShadersFromFile("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\littextured");  
 
 	if (!mProgram)
 	{
@@ -218,14 +234,14 @@ void CitySectorFPS::draw()
 	//TextureManager::Inst()->BindTexture(0);
 	CheckGLErrors("Error has occured lol 1");
 	gShaderHandles.Use(vertices, texcoords, NULL, mat, Matrix4(), 0);
-	CheckGLErrors("Error has occured lol");
+	CheckGLErrors("Error has occured lol2");
 
 	// Load the vertex data
 	TextureManager::Inst()->BindTexture(0, 0);
 	static unsigned char indices[] = { 0, 1, 3, 3, 1, 2 };
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-
+	glUseProgram(mLightingProgram);
 	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, mat, 0);
 	my_test_mesh->draw();
 	gShaderHandles.Deinit();
