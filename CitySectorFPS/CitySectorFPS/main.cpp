@@ -90,7 +90,7 @@ struct sShaderHandles
 		glBindBuffer(GL_ARRAY_BUFFER, 0);		
 	}
 	
-	void Use(const CVertexBuffer &buffer, Matrix4 &mat, int texid)
+	void Use(const CVertexBuffer &buffer, const Matrix4 &mat, const Matrix4 &MVPmatrix, int texid)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.GetGLHandle());
 		CheckGLErrors("Error has occured lol6");
@@ -103,7 +103,9 @@ struct sShaderHandles
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol7");
-		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&mat);
+		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&MVPmatrix);
+		if (uMMatrix != -1)
+			glUniformMatrix4fv(uMMatrix, 1, false, (const float*)&mat);
 		CheckGLErrors("Error has occured lol7b");
 		if (MaterialColour != -1)
 			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -186,9 +188,13 @@ bool CitySectorFPS::initialize()
 	
 	unsigned int v_count = 0;
 	unsigned int t_count = 0;
-	my_test_mesh->add_prism_element_count(segment_count, slice_count, v_count, t_count);
-	my_test_mesh->create_arrays(v_count, t_count * 6);
-	my_test_mesh->create_prism(CVector3f(0, 0, 0), -20, 10, segment_count, slice_count);
+	//my_test_mesh->add_prism_element_count(segment_count, slice_count, v_count, t_count);
+	//my_test_mesh->create_arrays(v_count, t_count * 6);
+	//my_test_mesh->create_prism(CVector3f(1, 1, 1), 20, 1, segment_count, slice_count);
+
+	my_test_mesh->create_arrays(8, 12);
+	my_test_mesh->create_cube(CVector3f(-10, -10, -10), CVector3f(10, 10, 10));
+
 	my_test_mesh->fill_GPU_buffers();
 	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
 	//TODO: make sure this uses relative paths some day
@@ -202,6 +208,7 @@ void CitySectorFPS::destroy()
 	glDeleteProgram(mProgram);
 }
 
+Vector3 objectOrientation(0, 0, 0);
 void CitySectorFPS::draw()
 {
 	GLfloat vertices[] =
@@ -242,7 +249,23 @@ void CitySectorFPS::draw()
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glUseProgram(mLightingProgram);
-	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, mat, 0);
+	
+	Matrix4 objmat;
+	objmat *= objmat.rotate(objectOrientation.x, Vector3(1, 0, 0));
+	objmat *= objmat.rotate(objectOrientation.y, Vector3(0, 1, 0));
+	objmat *= objmat.rotate(objectOrientation.z, Vector3(0, 0, 1));
+
+	objectOrientation.x += 0.01f;
+	objectOrientation.y += 0.1f;
+
+	Vector3 campos(0, 0, -100.0f);
+	Matrix4 viewmatrix = Matrix4::translate(campos);
+
+	//Matrix4 projmat = Matrix4:: Matrix4::perspective(50.0f, 1000.0, 0.1, 10000.0f);
+	Matrix4 projmat = Matrix4::ortho(-100, 100, -100, 100, 0.1, 10000.0f);
+
+	Matrix4 MVP = projmat *viewmatrix * objmat;
+	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, objmat, MVP, 0);
 	my_test_mesh->draw();
 	gShaderHandles.Deinit();
 }

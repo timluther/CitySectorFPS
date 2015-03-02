@@ -136,12 +136,14 @@ void CMesh::create_prism(const CVector3f &c, float radius, float length, unsigne
     float current_z = start_z + delta_z;
     float pinch = 5;
     #ifdef OLD
-    create_regular_polygon(CVector3f(c.x, c.y, z_modifier(0, radius)), radius_modifier(0,radius), pinch, segment_count, E_FRONTFACING);
+	float zmod = z_modifier(0, radius);
+    create_regular_polygon(CVector3f(c.x, c.y, zmod), radius_modifier(0,radius), pinch, segment_count, E_FRONTFACING);
     for(unsigned int i = 0; i < slice_count - 1; ++i)
     {
         float dz = (i + 1)/ (float) slice_count;
         float lradius = radius_modifier(dz, radius);
-        create_regular_polygon(CVector3f(c.x, c.y, z_modifier(dz, radius)), lradius, pinch, segment_count, E_NONE);
+		float zmod = z_modifier(dz, radius);
+		create_regular_polygon(CVector3f(c.x, c.y, zmod), lradius, pinch, segment_count, E_NONE);
         std::cout << "Z: " << dz << std::endl;
         current_z -= delta_z;
     }
@@ -152,7 +154,8 @@ void CMesh::create_prism(const CVector3f &c, float radius, float length, unsigne
     {
         float dz = i/ (float) slice_count;
         float lradius = radius_modifier(dz, radius);
-        create_regular_polygon(CVector3f(c.x, c.y, z_modifier(dz, radius)), lradius, pinch, segment_count, i == 0 ?E_FRONTFACING : i == slice_count ? E_BACKFACING : E_NONE);
+		float zmod = z_modifier(dz, radius);
+		create_regular_polygon(CVector3f(c.x, c.y, zmod), lradius, pinch, segment_count, i == 0 ? E_FRONTFACING : i == slice_count ? E_BACKFACING : E_NONE);
         std::cout << "Z: " << dz << std::endl;
         current_z -= delta_z;
     }
