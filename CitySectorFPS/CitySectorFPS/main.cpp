@@ -59,15 +59,17 @@ struct sShaderHandles
 		aPosition = glGetAttribLocation(ProgramHandle, "aPosition");
 	}
 
+#define BUFFER_OFFSET(i) ((char*)NULL +(i << 2))
 	void Use(GLfloat *vertices, GLfloat *texturecoordinates, GLfloat *normals, Matrix4 &MVPmatrix, Matrix4 &WorldMatrix, int texid)
 	{
+		int stride = 36;
 		CheckGLErrors("Error has occured lol3");
-		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, vertices);		
+		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0));		
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
 		if (aNormal != -1)
-			glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, 0, normals);
-		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texturecoordinates);
+			glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3));
+		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6));
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol4");
@@ -99,13 +101,13 @@ struct sShaderHandles
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
 		CheckGLErrors("Error has occured lol9");
-		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
+/*		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
 		if (aTexCoord != -1)
-			glEnableVertexAttribArray(aTexCoord);
+			glEnableVertexAttribArray(aTexCoord);*/
 		CheckGLErrors("Error has occured lol7");
-		glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&MVPmatrix);
+		glUniformMatrix4fv(uMvpMatrix, 1, GL_FALSE, (const float*)&MVPmatrix.data);
 		if (uMMatrix != -1)
-			glUniformMatrix4fv(uMMatrix, 1, false, (const float*)&mat);
+			glUniformMatrix4fv(uMMatrix, 1, GL_FALSE, (const float*)&mat.data);
 		CheckGLErrors("Error has occured lol7b");
 		if (MaterialColour != -1)
 			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -258,11 +260,11 @@ void CitySectorFPS::draw()
 	objectOrientation.x += 0.01f;
 	objectOrientation.y += 0.1f;
 
-	Vector3 campos(0, 0, -100.0f);
+	Vector3 campos(0, 0, -1000.0f);
 	Matrix4 viewmatrix = Matrix4::translate(campos);
 
-	//Matrix4 projmat = Matrix4:: Matrix4::perspective(50.0f, 1000.0, 0.1, 10000.0f);
-	Matrix4 projmat = Matrix4::ortho(-100, 100, -100, 100, 0.1, 10000.0f);
+	Matrix4 projmat = Matrix4::perspective(50.0f, 1000.0, 0.1, 10000.0f);
+	//Matrix4 projmat = Matrix4::ortho(-100, 100, -100, 100, 0.1, 10000.0f);
 
 	Matrix4 MVP = projmat *viewmatrix * objmat;
 	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, objmat, MVP, 0);
