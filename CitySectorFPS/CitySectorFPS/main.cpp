@@ -171,9 +171,9 @@ int LoadShadersFromFile(const char *filename)
 
 bool CitySectorFPS::initialize()
 {	
-	
-	mProgram = LoadShadersFromFile("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\simpleshader");
-	mLightingProgram = LoadShadersFromFile("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\littextured");  
+	std::string basestr = "C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\";
+	mProgram = LoadShadersFromFile((basestr  + "simpleshader").c_str());
+	mLightingProgram = LoadShadersFromFile((basestr + "littextured").c_str());  
 
 	if (!mProgram)
 	{
