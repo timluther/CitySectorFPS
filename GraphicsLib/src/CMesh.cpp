@@ -381,7 +381,7 @@ void CMesh::fill_GPU_buffers()
 	mVertexBuffer.EnsureCapacity(m_vertex_count);
 	CVertexBuffer::VertexType *vertices = (CVertexBuffer::VertexType *)mVertexBuffer.Lock();
 	unsigned short *indices = mIndexBuffer.Lock();
-
+	size_t vsize = sizeof(vertices[0]);
 	for (unsigned int i = 0; i < m_vertex_count; ++i)
 	{
 		vertices[i].mPosition = m_vertices[i];
