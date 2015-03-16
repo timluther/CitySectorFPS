@@ -84,11 +84,11 @@ struct sShaderHandles
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.GetGLHandle());
 		CheckGLErrors("Error has occured lol6");
 	
-		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, buffer.GetVertexSize(), (void*)0);
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
 		CheckGLErrors("Error has occured lol9");
-		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
+		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, buffer.GetVertexSize(), (void*)24);
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol7");
@@ -179,9 +179,14 @@ bool CitySectorFPS::initialize()
 
 	std::cout << "Starting City Sector" << std::endl;
 	//std::string basestr = "C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\";
-	std::string basestr = "E:\\prog\\BrythonsCode\\data\\";
-	mProgram = LoadShadersFromFile((basestr  + "simpleshader").c_str());
-	mLightingProgram = LoadShadersFromFile((basestr + "littextured").c_str());  
+
+	char module_filename[512];
+	GetModuleFileNameA(NULL, module_filename, 512);
+	std::string ApplicationDataDir = PathOrParentOf(PathOrParentOf(PathOrParentOf(module_filename)));
+	ApplicationDataDir += "\\data\\";
+
+	mProgram = LoadShadersFromFile((ApplicationDataDir + "simpleshader").c_str());
+	mLightingProgram = LoadShadersFromFile((ApplicationDataDir + "littextured").c_str());
 
 	if (!mProgram)
 	{
@@ -210,14 +215,11 @@ bool CitySectorFPS::initialize()
 	//TODO: make sure this uses relative paths some day
 	//C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\
 
-	char module_filename[512];
-	GetModuleFileNameA(NULL, module_filename, 512);
-	std::string str = PathOrParentOf(PathOrParentOf(PathOrParentOf(module_filename)));
 	
-	str += "\\data\\testimage.png";
+	
+	std::string ImagePath = ApplicationDataDir + "testimage.png";
 
-	TextureManager::Inst()->LoadTexture(str.c_str(), 0);
-	
+	TextureManager::Inst()->LoadTexture(ImagePath.c_str(), 0);	
 	return true;
 }
 
@@ -228,31 +230,62 @@ Vector3 camOrientation(0, 0, 0);
 Vector3 objectSpin(0, 0, 0);
 Vector3 objectOrientation(0, 0, 0);
 
+
+
+
 void CitySectorFPS::handleEvent(Event *event)
 {
 	static float speed = 1.0;
+	static float mouseSensitivity = 0.005f;
+	static int buttonstatus = 0;
+	static int lastMouseX = 0;
+	static int lastMouseY = 0;
 	switch (event->Type)
 	{
-	case Event::EVENT_KEY_PRESSED:
-	{
-		switch (event->Key.Code)
+		case Event::EVENT_MOUSE_BUTTON_PRESSED:
 		{
-		case KEY_G:
-			objectSpin.x -= 0.1;break;
-		case KEY_H:
-			objectSpin.x += 0.1;break;
-		case KEY_W:
-			camPos.z += speed;break;
-		case KEY_S:
-			camPos.z -= speed;break;
-		case KEY_A:
-			camPos.x -= speed;break;
-		case KEY_D:
-			camPos.x += speed;break;
+			buttonstatus |= 1 << event->MouseButton.Button;			
+			break;
 		}
-		std::cout << "cam pos: " << camPos.x << ", " << camPos.y << ", " << camPos.z << std::endl;
-		break;
-	}
+		case Event::EVENT_MOUSE_BUTTON_RELEASED:
+		{
+			buttonstatus &= ~(1 << event->MouseButton.Button);
+			
+			break;
+		}
+		case Event::EVENT_MOUSE_MOVED:
+		{
+			if (buttonstatus != 0)
+			{
+				int MouseDeltaX = event->MouseMove.X - lastMouseX;
+				int MouseDeltaY = event->MouseMove.Y - lastMouseY;
+				camOrientation.y += float(MouseDeltaX) * mouseSensitivity;
+				camOrientation.x += float(MouseDeltaY) * mouseSensitivity;
+				lastMouseX = event->MouseMove.X;
+				lastMouseY = event->MouseMove.Y;
+			}				 
+			break;
+		}
+		case Event::EVENT_KEY_PRESSED:
+		{
+			switch (event->Key.Code)
+			{
+			case KEY_G:
+				objectSpin.x -= 0.1;break;
+			case KEY_H:
+				objectSpin.x += 0.1;break;
+			case KEY_W:
+				camPos.z += speed;break;
+			case KEY_S:
+				camPos.z -= speed;break;
+			case KEY_A:
+				camPos.x -= speed;break;
+			case KEY_D:
+				camPos.x += speed;break;
+			}
+			std::cout << "cam pos: " << camPos.x << ", " << camPos.y << ", " << camPos.z << std::endl;
+			break;
+		}
 	}
 }
 
@@ -312,10 +345,11 @@ void CitySectorFPS::draw()
 	objmat *= objmat.rotate(objectOrientation.z, Vector3(0, 0, 1));*/
 
 	objectOrientation += objectSpin;
-	Matrix4 viewmatrix = Matrix4::translate(camPos);
-	viewmatrix *= viewmatrix.rotate(camOrientation.x, Vector3(1, 0, 0));
+	Matrix4 viewmatrix = Matrix4::identity();
 	viewmatrix *= viewmatrix.rotate(camOrientation.y, Vector3(0, 1, 0));
-	viewmatrix *= viewmatrix.rotate(camOrientation.z, Vector3(0, 0, 1));
+	//viewmatrix *= viewmatrix.rotate(camOrientation.x, Vector3(1, 0, 0));	
+	//viewmatrix *= viewmatrix.rotate(camOrientation.z, Vector3(0, 0, 1));
+	viewmatrix *= Matrix4::translate(camPos);
 	
 	Matrix4 projmat = Matrix4::perspective(50.0f, aspectRatio, 0.1, 10000.0f);
 	//Matrix4 projmat = Matrix4::ortho(-100, 100, -100, 100, 0.1, 10000.0f);

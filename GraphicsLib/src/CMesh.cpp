@@ -331,8 +331,7 @@ void CMesh::draw()
 		// mIndexBuffer.GLIndexType()
 		
 		mIndexBuffer.Use();
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);		
-		//mIndexBuffer.Count()
+		glDrawElements(GL_TRIANGLES, mIndexBuffer.Count(), GL_UNSIGNED_SHORT, 0);
 		
 		//mMaterial->EndDraw();
 		
@@ -387,6 +386,11 @@ void CMesh::fill_GPU_buffers()
 	for (unsigned int i = 0; i < m_vertex_count; ++i)
 	{
 		vertices[i].mPosition = m_vertices[i];
+		vertices[i].mNormal = CVector3f(0, 0, 1);
+		vertices[i].mColour = 0xFFFFFFFF;
+		vertices[i].mUv.x = 0.0;
+		vertices[i].mUv.y = 0.0;
+
 		if (m_normals)
 			vertices[i].mNormal	  = m_normals[i];
 		vertices[i].mColour	  = 0xFFFFFFFF;
