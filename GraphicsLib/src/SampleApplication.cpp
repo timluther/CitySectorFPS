@@ -69,6 +69,7 @@ EGLContext SampleApplication::getContext() const
     return mEGLWindow->getContext();
 }
 
+
 int SampleApplication::run()
 {
     if (!mOSWindow->initialize(mName, mEGLWindow->getWidth(), mEGLWindow->getHeight()))
@@ -102,13 +103,16 @@ int SampleApplication::run()
 
         // Clear events that the application did not process from this frame
         Event event;
-        while (popEvent(&event))
-        {
-            // If the application did not catch a close event, close now
-            if (event.Type == Event::EVENT_CLOSED)
-            {
-                exit();
-            }
+		while (popEvent(&event))
+		{
+			handleEvent(&event);
+			switch (event.Type)
+			{				
+				case Event::EVENT_CLOSED:
+				{
+					exit();
+				}
+			}
         }
 
         if (!mRunning)

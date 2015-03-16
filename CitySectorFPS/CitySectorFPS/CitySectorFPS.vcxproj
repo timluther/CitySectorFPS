@@ -78,6 +78,15 @@
       <Project>{81dbf93e-c867-42a1-9d24-f0501ed50327}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\littextured.frag" />
+    <None Include="..\..\data\littextured.vert" />
+    <None Include="..\..\data\simpleshader.frag" />
+    <None Include="..\..\data\simpleshader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\data\testimage.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

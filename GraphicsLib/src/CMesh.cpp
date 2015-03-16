@@ -331,7 +331,9 @@ void CMesh::draw()
 		// mIndexBuffer.GLIndexType()
 		
 		mIndexBuffer.Use();
-		glDrawElements(GL_TRIANGLES, mIndexBuffer.Count(), GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);		
+		//mIndexBuffer.Count()
+		
 		//mMaterial->EndDraw();
 		
 		

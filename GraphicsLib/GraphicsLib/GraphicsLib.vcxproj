@@ -105,6 +105,7 @@
     <ClCompile Include="..\src\tga_utils.cpp" />
     <ClCompile Include="..\src\UtilGL.cpp" />
     <ClCompile Include="..\src\Utility.cpp" />
+    <ClCompile Include="..\src\UtilLogger.cpp" />
     <ClCompile Include="..\src\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -125,6 +126,7 @@
     <ClInclude Include="..\include\texture_utils.h" />
     <ClInclude Include="..\include\tga_utils.h" />
     <ClInclude Include="..\include\Utility.h" />
+    <ClInclude Include="..\include\UtilLogger.h" />
     <ClInclude Include="..\include\Vector.h" />
   </ItemGroup>
   <ItemGroup>

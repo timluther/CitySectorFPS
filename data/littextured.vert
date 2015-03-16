@@ -12,7 +12,7 @@ varying vec3 vNormal;
 
 void main()
 {
-	gl_Position = u_mvpmatrix * aPosition; //
+	gl_Position = u_mvpmatrix * aPosition;
 	
 	mat3 normalMatrix = mat3(u_mmatrix);
 	vWorldPosition =  (u_mmatrix * aPosition).xyz;

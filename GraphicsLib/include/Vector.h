@@ -48,6 +48,8 @@ struct Vector3
 
     static float dot(const Vector3 &a, const Vector3 &b);
     static Vector3 cross(const Vector3 &a, const Vector3 &b);
+
+	const Vector3 &operator += (const Vector3 &other) { x += other.x; y += other.y; z += other.z; return *this; }
 };
 
 Vector3 operator*(const Vector3 &a, const Vector3 &b);

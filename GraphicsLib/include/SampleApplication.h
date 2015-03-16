@@ -43,6 +43,7 @@ class SampleApplication
     EGLContext getContext() const;
 
     bool popEvent(Event *event);
+	virtual void handleEvent(Event *event) = 0;
 
     int run();
     void exit();

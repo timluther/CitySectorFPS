@@ -8,7 +8,7 @@ public:
 	virtual bool initialize();
 	virtual void destroy();
 	virtual void draw();
-
+	virtual void handleEvent(Event *event);
 private:
 	GLuint mProgram;
 	GLuint mLightingProgram;

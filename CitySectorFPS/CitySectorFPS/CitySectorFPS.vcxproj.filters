@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{326213e1-f685-40d8-9856-cf0cfd3294d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -23,5 +26,24 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\littextured.frag">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\littextured.vert">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\simpleshader.frag">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\simpleshader.vert">
+      <Filter>Data</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\data\testimage.png">
+      <Filter>Data</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -7,8 +7,13 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+
+#include "UtilLogger.h"
+
 size_t segment_count = 10, slice_count = 10;
 
+float aspectRatio = 1.0;
 int mvp_matrix_handle = -1;
 int m_matrix_handle = -1;
 Matrix4 mat;
@@ -19,24 +24,6 @@ CitySectorFPS::CitySectorFPS()
 	: SampleApplication("HelloTriangle", 1280, 720)
 {
 }
-/*
-struct SVertex_P_D4B_N_UV
-{
-	enum { VERTEX_TYPE = EVT_P_D4B_N_UV };
-
-	SVertex_P_D4B_N_UV(const CVector3f &position, const CVector3f &normal, const CVector2f &uv, unsigned int colour)
-		:mPosition(position)
-		, mNormal(normal)
-		, mUv(uv)
-		, mColour(colour)
-	{
-	}
-
-	CVector3f mPosition;   //0
-	CVector3f mNormal;     //12
-	CVector2f mUv;         //24
-	unsigned int mColour;  //32
-};*/
 
 struct sShaderHandles
 {
@@ -64,12 +51,12 @@ struct sShaderHandles
 	{
 		int stride = 36;
 		CheckGLErrors("Error has occured lol3");
-		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(0));		
+		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, 0, vertices);		
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
 		if (aNormal != -1)
-			glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(3));
-		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6));
+			glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, 0, normals);
+		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0, texturecoordinates);
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol4");
@@ -101,11 +88,12 @@ struct sShaderHandles
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
 		CheckGLErrors("Error has occured lol9");
-/*		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
+		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 0,(void*) 24);
 		if (aTexCoord != -1)
-			glEnableVertexAttribArray(aTexCoord);*/
+			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol7");
-		glUniformMatrix4fv(uMvpMatrix, 1, GL_FALSE, (const float*)&MVPmatrix.data);
+		if (uMvpMatrix != -1)
+			glUniformMatrix4fv(uMvpMatrix, 1, GL_FALSE, (const float*)&MVPmatrix.data);
 		if (uMMatrix != -1)
 			glUniformMatrix4fv(uMMatrix, 1, GL_FALSE, (const float*)&mat.data);
 		CheckGLErrors("Error has occured lol7b");
@@ -170,10 +158,28 @@ int LoadShadersFromFile(const char *filename)
 
 }
 
+std::string PathOrParentOf(const std::string &filename)
+{
+	size_t idx = filename.find_last_of('\\');
+	if (idx == filename.length() - 1)
+		idx = filename.find_last_of('\\', filename.length() - 2);
+	if (idx != std::string::npos)
+	{
+		return filename.substr(0, idx);
+	}
+}
+
+COutputdebugStringStream outputlog(128);
+std::ofstream			 mLog;
 
 bool CitySectorFPS::initialize()
 {	
-	std::string basestr = "C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\";
+	LOGinit(&mLog);
+	LOG.rdbuf(&outputlog);
+
+	std::cout << "Starting City Sector" << std::endl;
+	//std::string basestr = "C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\";
+	std::string basestr = "E:\\prog\\BrythonsCode\\data\\";
 	mProgram = LoadShadersFromFile((basestr  + "simpleshader").c_str());
 	mLightingProgram = LoadShadersFromFile((basestr + "littextured").c_str());  
 
@@ -181,6 +187,8 @@ bool CitySectorFPS::initialize()
 	{
 		return false;
 	}
+
+	
 
 	gShaderHandles.Init(mProgram);
 	gLitShaderHandles.Init(mLightingProgram);
@@ -200,9 +208,52 @@ bool CitySectorFPS::initialize()
 	my_test_mesh->fill_GPU_buffers();
 	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
 	//TODO: make sure this uses relative paths some day
-	TextureManager::Inst()->LoadTexture("C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\data\\testimage.png", 0);
+	//C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\
+
+	char module_filename[512];
+	GetModuleFileNameA(NULL, module_filename, 512);
+	std::string str = PathOrParentOf(PathOrParentOf(PathOrParentOf(module_filename)));
+	
+	str += "\\data\\testimage.png";
+
+	TextureManager::Inst()->LoadTexture(str.c_str(), 0);
 	
 	return true;
+}
+
+
+
+Vector3 camPos(0, 0, -100.0f);
+Vector3 camOrientation(0, 0, 0);
+Vector3 objectSpin(0, 0, 0);
+Vector3 objectOrientation(0, 0, 0);
+
+void CitySectorFPS::handleEvent(Event *event)
+{
+	static float speed = 1.0;
+	switch (event->Type)
+	{
+	case Event::EVENT_KEY_PRESSED:
+	{
+		switch (event->Key.Code)
+		{
+		case KEY_G:
+			objectSpin.x -= 0.1;break;
+		case KEY_H:
+			objectSpin.x += 0.1;break;
+		case KEY_W:
+			camPos.z += speed;break;
+		case KEY_S:
+			camPos.z -= speed;break;
+		case KEY_A:
+			camPos.x -= speed;break;
+		case KEY_D:
+			camPos.x += speed;break;
+		}
+		std::cout << "cam pos: " << camPos.x << ", " << camPos.y << ", " << camPos.z << std::endl;
+		break;
+	}
+	}
 }
 
 void CitySectorFPS::destroy()
@@ -210,7 +261,7 @@ void CitySectorFPS::destroy()
 	glDeleteProgram(mProgram);
 }
 
-Vector3 objectOrientation(0, 0, 0);
+
 void CitySectorFPS::draw()
 {
 	GLfloat vertices[] =
@@ -231,6 +282,7 @@ void CitySectorFPS::draw()
 
 	// Set the viewport
 	glViewport(0, 0, getWindow()->getWidth(), getWindow()->getHeight());
+	aspectRatio = getWindow()->getWidth() / (float)getWindow()->getHeight();
 
 	// Clear the color buffer
 	glClearColor(0.1, 0.1, 0.1, 1.0);
@@ -248,25 +300,30 @@ void CitySectorFPS::draw()
 	// Load the vertex data
 	TextureManager::Inst()->BindTexture(0, 0);
 	static unsigned char indices[] = { 0, 1, 3, 3, 1, 2 };
+	CheckGLErrors("Error has occured alpha 1");
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+	CheckGLErrors("Error has occured alpha 2");
 	glUseProgram(mLightingProgram);
 	
-	Matrix4 objmat;
-	objmat *= objmat.rotate(objectOrientation.x, Vector3(1, 0, 0));
+	Matrix4 objmat = Matrix4::identity();
+	/*objmat *= objmat.rotate(objectOrientation.x, Vector3(1, 0, 0));
 	objmat *= objmat.rotate(objectOrientation.y, Vector3(0, 1, 0));
-	objmat *= objmat.rotate(objectOrientation.z, Vector3(0, 0, 1));
+	objmat *= objmat.rotate(objectOrientation.z, Vector3(0, 0, 1));*/
 
-	objectOrientation.x += 0.01f;
-	objectOrientation.y += 0.1f;
-
-	Vector3 campos(0, 0, -1000.0f);
-	Matrix4 viewmatrix = Matrix4::translate(campos);
-
-	Matrix4 projmat = Matrix4::perspective(50.0f, 1000.0, 0.1, 10000.0f);
+	objectOrientation += objectSpin;
+	Matrix4 viewmatrix = Matrix4::translate(camPos);
+	viewmatrix *= viewmatrix.rotate(camOrientation.x, Vector3(1, 0, 0));
+	viewmatrix *= viewmatrix.rotate(camOrientation.y, Vector3(0, 1, 0));
+	viewmatrix *= viewmatrix.rotate(camOrientation.z, Vector3(0, 0, 1));
+	
+	Matrix4 projmat = Matrix4::perspective(50.0f, aspectRatio, 0.1, 10000.0f);
 	//Matrix4 projmat = Matrix4::ortho(-100, 100, -100, 100, 0.1, 10000.0f);
 
-	Matrix4 MVP = projmat *viewmatrix * objmat;
+	Matrix4 MVP = projmat * viewmatrix;// *objmat;//
+
+	//Matrix4 MVP = objmat * viewmatrix * projmat;
+	CheckGLErrors("Error has occured alpha");
 	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, objmat, MVP, 0);
 	my_test_mesh->draw();
 	gShaderHandles.Deinit();
