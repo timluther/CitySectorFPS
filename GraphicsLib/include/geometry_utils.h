@@ -9,13 +9,14 @@
 
 #include <GLES2/gl2.h>
 
-#include "Vector.h"
+#include "CVector3f.h"
+#include "CVector2f.h"
 #include <vector>
 
 struct SphereGeometry
 {
-    std::vector<Vector3> positions;
-    std::vector<Vector3> normals;
+    std::vector<CVector3f> positions;
+    std::vector<CVector3f> normals;
     std::vector<GLushort> indices;
 };
 
@@ -23,9 +24,9 @@ void CreateSphereGeometry(size_t sliceCount, float radius, SphereGeometry *resul
 
 struct CubeGeometry
 {
-    std::vector<Vector3> positions;
-    std::vector<Vector3> normals;
-    std::vector<Vector2> texcoords;
+    std::vector<CVector3f> positions;
+    std::vector<CVector3f> normals;
+	std::vector<CVector2f> texcoords;
     std::vector<GLushort> indices;
 };
 

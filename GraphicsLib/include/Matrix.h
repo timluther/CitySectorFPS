@@ -7,8 +7,8 @@
 #ifndef SAMPLE_UTIL_MATRIX_H
 #define SAMPLE_UTIL_MATRIX_H
 
-#include "Vector.h"
-
+#include "CVector3f.h"
+#include "CVector4f.h"
 struct Matrix4
 {
     float data[16];
@@ -18,10 +18,13 @@ struct Matrix4
             float m10, float m11, float m12, float m13,
             float m20, float m21, float m22, float m23,
             float m30, float m31, float m32, float m33);
+
+	CVector3f	column(unsigned int idx) const;
+	const CVector3f	&row(unsigned int idx) const;
     static Matrix4 identity();
-    static Matrix4 rotate(float angle, const Vector3 &p);
-    static Matrix4 translate(const Vector3 &t);
-    static Matrix4 scale(const Vector3 &s);
+    static Matrix4 rotate(float angle, const CVector3f &p);
+    static Matrix4 translate(const CVector3f &t);
+    static Matrix4 scale(const CVector3f &s);
     static Matrix4 frustum(float l, float r, float b, float t, float n, float f);
     static Matrix4 perspective(float fov, float aspectRatio, float n, float f);
     static Matrix4 ortho(float l, float r, float b, float t, float n, float f);
@@ -29,15 +32,19 @@ struct Matrix4
 
     static Matrix4 invert(const Matrix4 &mat);
     static Matrix4 transpose(const Matrix4 &mat);
-    static Vector3 transform(const Matrix4 &mat, const Vector3 &pt);
-    static Vector3 transform(const Matrix4 &mat, const Vector4 &pt);
+    static CVector3f transform(const Matrix4 &mat, const CVector3f &pt);
+    static CVector4f transform(const Matrix4 &mat, const CVector4f &pt);
 };
 
 Matrix4 operator*(const Matrix4 &a, const Matrix4 &b);
 Matrix4 &operator*=(Matrix4 &a, const Matrix4 &b);
 Matrix4 operator*(const Matrix4 &a, float b);
 Matrix4 &operator*=(Matrix4 &a, float b);
-Vector4 operator*(const Matrix4 &a, const Vector4 &b);
+
+CVector3f operator*(const Matrix4 &a, const CVector3f &b);
+CVector4f operator*(const Matrix4 &a, const CVector4f &b);
+
+//Vector4 operator*(const Matrix4 &a, const Vector4 &b);
 
 bool operator==(const Matrix4 &a, const Matrix4 &b);
 bool operator!=(const Matrix4 &a, const Matrix4 &b);

@@ -85,7 +85,7 @@ template <class VERTEX_TYPE>                                                    
 void CVertexBuffer::AddVertex(const VERTEX_TYPE &vertex)                                                    
 {
 	EnsureCapacity(mCount + 1);
-	ASSERT(mFormat == VERTEX_TYPE::VERTEX_TYPE) //check this is the same vertex format as the mesh			
+	assert(mFormat == VERTEX_TYPE::VERTEX_TYPE); //check this is the same vertex format as the mesh			
 	((VERTEX_TYPE*)mData)[mCount++] = vertex;		
 	if (mCount > mLockSize)
 		mLockSize = mCount;

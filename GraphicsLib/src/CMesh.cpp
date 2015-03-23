@@ -102,6 +102,45 @@ void CMesh::destroy()
     }
 }
 
+
+void CMesh::calculate_normals()
+{
+	//TODO: for each vertex, take the average surrounding polygon vertices and assign that as vertex normal
+}
+
+void CMesh::add_polygon(const std::vector<size_t> &indices, bool flip)
+{
+	add_polygon(&indices[0], indices.size(), flip);
+}
+
+void CMesh::add_polygon(const size_t *indices, size_t count, bool flip)
+{
+	unsigned int base_vertex = 0;// m_vertex_count;
+	unsigned int triangle_count = count - 2;
+	unsigned int c = base_vertex + 1;
+	if (flip)
+	{
+		for (unsigned int i = 0; i < triangle_count; ++i)
+		{
+			m_indices[m_index_count++] = indices[c + 1];
+			m_indices[m_index_count++] = indices[c];
+			m_indices[m_index_count++] = indices[base_vertex];
+			++c;
+		}
+	}
+	else
+	{
+		for (unsigned int i = 0; i < triangle_count; ++i)
+		{
+			m_indices[m_index_count++] = indices[base_vertex];
+			m_indices[m_index_count++] = indices[c];
+			m_indices[m_index_count++] = indices[c + 1];
+			++c;
+		}
+	}
+}
+
+
 void CMesh::create_regular_polygon(const CVector3f &c, float radius, float pinch, unsigned int segment_count, EFillMode fill_mode)
 {
     if((m_vertex_count + segment_count) >= m_vertex_capacity)
@@ -371,10 +410,6 @@ void CMesh::draw()
 #endif
 }
 
-void CMesh::calculate_normals()
-{
-
-}
 
 void CMesh::fill_GPU_buffers()
 {

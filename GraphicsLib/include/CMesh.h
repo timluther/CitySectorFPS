@@ -3,7 +3,7 @@
 #include "CVector3f.h"
 #include "CVertexBuffer.h"
 #include "CIndexBuffer.h"
-
+#include <vector>
 enum EFillMode
 {
     E_BACKFACING,
@@ -39,11 +39,15 @@ class CMesh
 
         void create_quad(int a, int b, int c, int d);
 
+		void calculate_normals();
+
+		void add_polygon(const std::vector<size_t> &indices, bool flip);
+
+		void add_polygon(const size_t *indices, size_t count, bool flip);
+
         void update(float dt);
 
         void draw();
-
-        void calculate_normals();
 
 		void fill_GPU_buffers();
 

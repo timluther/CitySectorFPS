@@ -36,9 +36,22 @@ Matrix4 Matrix4::identity()
                    0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-Matrix4 Matrix4::rotate(float angle, const Vector3 &p)
+
+CVector3f	Matrix4::column(unsigned int idx) const
+{	
+	return CVector3f(data[idx], data[idx + 4], data[ idx + 8]);
+}
+
+
+const CVector3f	&Matrix4::row(unsigned int idx) const
 {
-    Vector3 u = Vector3::normalize(p);
+	return *(CVector3f*)&data[idx << 2] ;
+}
+
+
+Matrix4 Matrix4::rotate(float angle, const CVector3f &p)
+{
+	CVector3f u = p.normal();
     float theta = angle * (M_PI / 180.0f);
     float cos_t = cosf(theta);
     float sin_t = sinf(theta);
@@ -49,7 +62,7 @@ Matrix4 Matrix4::rotate(float angle, const Vector3 &p)
                                                            0.0f,                                           0.0f,                                         0.0f, 1.0f);
 }
 
-Matrix4 Matrix4::translate(const Vector3 &t)
+Matrix4 Matrix4::translate(const CVector3f &t)
 {
     return Matrix4(1.0f, 0.0f, 0.0f,  t.x,
                    0.0f, 1.0f, 0.0f,  t.y,
@@ -57,7 +70,7 @@ Matrix4 Matrix4::translate(const Vector3 &t)
                    0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-Matrix4 Matrix4::scale(const Vector3 &s)
+Matrix4 Matrix4::scale(const CVector3f &s)
 {
     return Matrix4( s.x, 0.0f, 0.0f, 0.0f,
                    0.0f,  s.y, 0.0f, 0.0f,
@@ -90,9 +103,9 @@ Matrix4 Matrix4::ortho(float l, float r, float b, float t, float n, float f)
 
 Matrix4 Matrix4::rollPitchYaw(float roll, float pitch, float yaw)
 {
-    return rotate(yaw,   Vector3(0, 0, 1)) *
-           rotate(pitch, Vector3(0, 1, 0)) *
-           rotate(roll,  Vector3(1, 0, 0));
+    return rotate(yaw,   CVector3f(0, 0, 1)) *
+           rotate(pitch, CVector3f(0, 1, 0)) *
+           rotate(roll,  CVector3f(1, 0, 0));
 }
 
 Matrix4 Matrix4::invert(const Matrix4 &mat)
@@ -135,19 +148,6 @@ Matrix4 Matrix4::transpose(const Matrix4 &mat)
                    mat.data[ 8], mat.data[ 9], mat.data[10], mat.data[11],
                    mat.data[12], mat.data[13], mat.data[14], mat.data[15]);
 }
-
-Vector3 Matrix4::transform(const Matrix4 &mat, const Vector3 &pt)
-{
-    Vector4 transformed = Vector4::normalize(mat * Vector4(pt.x, pt.y, pt.z, 1.0f));
-    return Vector3(transformed.x, transformed.y, transformed.z);
-}
-
-Vector3 Matrix4::transform(const Matrix4 &mat, const Vector4 &pt)
-{
-    Vector4 transformed = Vector4::normalize(mat * pt);
-    return Vector3(transformed.x, transformed.y, transformed.z);
-}
-
 Matrix4 operator*(const Matrix4 &a, const Matrix4 &b)
 {
     return Matrix4(a.data[ 0] * b.data[ 0] + a.data[ 4] * b.data[ 1] + a.data[ 8] * b.data[ 2] + a.data[12] * b.data[ 3],
@@ -193,12 +193,19 @@ Matrix4 &operator*=(Matrix4 &a, float b)
     return a;
 }
 
-Vector4 operator*(const Matrix4 &a, const Vector4 &b)
+CVector4f operator*(const Matrix4 &a, const CVector4f &b)
 {
-    return Vector4(a.data[ 0] * b.x + a.data[ 4] * b.y + a.data[ 8] * b.z + a.data[12] * b.w,
+	return CVector4f(a.data[0] * b.x + a.data[4] * b.y + a.data[8] * b.z + a.data[12] * b.w,
                    a.data[ 1] * b.x + a.data[ 5] * b.y + a.data[ 9] * b.z + a.data[13] * b.w,
                    a.data[ 2] * b.x + a.data[ 6] * b.y + a.data[10] * b.z + a.data[14] * b.w,
                    a.data[ 3] * b.x + a.data[ 7] * b.y + a.data[11] * b.z + a.data[15] * b.w);
+}
+
+CVector3f operator*(const Matrix4 &a, const CVector3f &b)
+{
+	return CVector3f(a.data[0] * b.x + a.data[4] * b.y + a.data[8] * b.z,
+		a.data[1] * b.x + a.data[5] * b.y + a.data[9] * b.z ,
+		a.data[2] * b.x + a.data[6] * b.y + a.data[10] * b.z );
 }
 
 bool operator==(const Matrix4 &a, const Matrix4 &b)
@@ -216,4 +223,19 @@ bool operator==(const Matrix4 &a, const Matrix4 &b)
 bool operator!=(const Matrix4 &a, const Matrix4 &b)
 {
     return !(a == b);
+}
+
+
+
+/*
+CVector3f Matrix4::transform(const Matrix4 &mat, const CVector3f &pt)
+{
+	CVector4f transformed = (mat * CVector4f(pt.x, pt.y, pt.z, 1.0f)).normal();
+	return CVector3f(transformed.x, transformed.y, transformed.z);
+}*/
+
+CVector3f Matrix4::transform(const Matrix4 &mat, const CVector3f &pt)
+{
+	CVector3f transformed = (mat * pt).normal();
+	return CVector3f(transformed.x, transformed.y, transformed.z);
 }

@@ -225,18 +225,18 @@ bool CitySectorFPS::initialize()
 
 
 
-Vector3 camPos(0, 0, -100.0f);
-Vector3 camOrientation(0, 0, 0);
-Vector3 objectSpin(0, 0, 0);
-Vector3 objectOrientation(0, 0, 0);
+CVector3f camPos(0, 0, -100.0f);
+CVector3f camOrientation(0, 0, 0);
+CVector3f objectSpin(0, 0, 0);
+CVector3f objectOrientation(0, 0, 0);
 
-
+CVector3f viewDirection(0, 0, 1);
 
 
 void CitySectorFPS::handleEvent(Event *event)
 {
 	static float speed = 1.0;
-	static float mouseSensitivity = 0.005f;
+	static float mouseSensitivity = 0.01f;
 	static int buttonstatus = 0;
 	static int lastMouseX = 0;
 	static int lastMouseY = 0;
@@ -244,7 +244,7 @@ void CitySectorFPS::handleEvent(Event *event)
 	{
 		case Event::EVENT_MOUSE_BUTTON_PRESSED:
 		{
-			buttonstatus |= 1 << event->MouseButton.Button;			
+			buttonstatus |= 1 << event->MouseButton.Button;						
 			break;
 		}
 		case Event::EVENT_MOUSE_BUTTON_RELEASED:
@@ -261,9 +261,10 @@ void CitySectorFPS::handleEvent(Event *event)
 				int MouseDeltaY = event->MouseMove.Y - lastMouseY;
 				camOrientation.y += float(MouseDeltaX) * mouseSensitivity;
 				camOrientation.x += float(MouseDeltaY) * mouseSensitivity;
-				lastMouseX = event->MouseMove.X;
-				lastMouseY = event->MouseMove.Y;
+			
 			}				 
+			lastMouseX = event->MouseMove.X;
+			lastMouseY = event->MouseMove.Y;
 			break;
 		}
 		case Event::EVENT_KEY_PRESSED:
@@ -275,9 +276,9 @@ void CitySectorFPS::handleEvent(Event *event)
 			case KEY_H:
 				objectSpin.x += 0.1;break;
 			case KEY_W:
-				camPos.z += speed;break;
+				camPos += viewDirection * speed; break;
 			case KEY_S:
-				camPos.z -= speed;break;
+				camPos -= viewDirection * speed; break;
 			case KEY_A:
 				camPos.x -= speed;break;
 			case KEY_D:
@@ -340,15 +341,17 @@ void CitySectorFPS::draw()
 	glUseProgram(mLightingProgram);
 	
 	Matrix4 objmat = Matrix4::identity();
-	/*objmat *= objmat.rotate(objectOrientation.x, Vector3(1, 0, 0));
-	objmat *= objmat.rotate(objectOrientation.y, Vector3(0, 1, 0));
-	objmat *= objmat.rotate(objectOrientation.z, Vector3(0, 0, 1));*/
+	/*objmat *= objmat.rotate(objectOrientation.x, CVector3f(1, 0, 0));
+	objmat *= objmat.rotate(objectOrientation.y, CVector3f(0, 1, 0));
+	objmat *= objmat.rotate(objectOrientation.z, CVector3f(0, 0, 1));*/
 
 	objectOrientation += objectSpin;
 	Matrix4 viewmatrix = Matrix4::identity();
-	viewmatrix *= viewmatrix.rotate(camOrientation.y, Vector3(0, 1, 0));
-	//viewmatrix *= viewmatrix.rotate(camOrientation.x, Vector3(1, 0, 0));	
-	//viewmatrix *= viewmatrix.rotate(camOrientation.z, Vector3(0, 0, 1));
+	viewmatrix *= viewmatrix.rotate(camOrientation.y, CVector3f(0, 1, 0));
+	viewmatrix *= viewmatrix.rotate(camOrientation.x, CVector3f(1, 0, 0));	
+
+	viewDirection = viewmatrix.column(2);
+	//viewmatrix *= viewmatrix.rotate(camOrientation.z, CVector3f(0, 0, 1));
 	viewmatrix *= Matrix4::translate(camPos);
 	
 	Matrix4 projmat = Matrix4::perspective(50.0f, aspectRatio, 0.1, 10000.0f);

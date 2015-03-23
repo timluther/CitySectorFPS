@@ -94,7 +94,9 @@
     <ClCompile Include="..\src\CMesh.cpp" />
     <ClCompile Include="..\src\CVector2f.cpp" />
     <ClCompile Include="..\src\CVector3f.cpp" />
+    <ClCompile Include="..\src\CVector4f.cpp" />
     <ClCompile Include="..\src\CVertexBuffer.cpp" />
+    <ClCompile Include="..\src\CWavefrontObjParser.cpp" />
     <ClCompile Include="..\src\geometry_utils.cpp" />
     <ClCompile Include="..\src\Matrix.cpp" />
     <ClCompile Include="..\src\random_utils.cpp" />
@@ -114,7 +116,9 @@
     <ClInclude Include="..\include\CMesh.h" />
     <ClInclude Include="..\include\CVector2f.h" />
     <ClInclude Include="..\include\CVector3f.h" />
+    <ClInclude Include="..\include\CVector4f.h" />
     <ClInclude Include="..\include\CVertexBuffer.h" />
+    <ClInclude Include="..\include\CWavefrontObjParser.h" />
     <ClInclude Include="..\include\EVertexType.h" />
     <ClInclude Include="..\include\geometry_utils.h" />
     <ClInclude Include="..\include\gl_includes.h" />
