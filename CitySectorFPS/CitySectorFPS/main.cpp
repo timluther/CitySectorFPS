@@ -231,12 +231,13 @@ CVector3f objectSpin(0, 0, 0);
 CVector3f objectOrientation(0, 0, 0);
 
 CVector3f viewDirection(0, 0, 1);
+CVector3f viewStrafeDirection(1, 0, 0);
 
 
 void CitySectorFPS::handleEvent(Event *event)
 {
 	static float speed = 1.0;
-	static float mouseSensitivity = 0.01f;
+	static float mouseSensitivity = 0.05f;
 	static int buttonstatus = 0;
 	static int lastMouseX = 0;
 	static int lastMouseY = 0;
@@ -280,9 +281,9 @@ void CitySectorFPS::handleEvent(Event *event)
 			case KEY_S:
 				camPos -= viewDirection * speed; break;
 			case KEY_A:
-				camPos.x -= speed;break;
+				camPos += viewStrafeDirection * speed; break;
 			case KEY_D:
-				camPos.x += speed;break;
+				camPos -= viewStrafeDirection * speed; break;
 			}
 			std::cout << "cam pos: " << camPos.x << ", " << camPos.y << ", " << camPos.z << std::endl;
 			break;
@@ -347,10 +348,13 @@ void CitySectorFPS::draw()
 
 	objectOrientation += objectSpin;
 	Matrix4 viewmatrix = Matrix4::identity();
+	viewmatrix *= viewmatrix.rotate(camOrientation.x, CVector3f(1, 0, 0));
 	viewmatrix *= viewmatrix.rotate(camOrientation.y, CVector3f(0, 1, 0));
-	viewmatrix *= viewmatrix.rotate(camOrientation.x, CVector3f(1, 0, 0));	
+	
 
 	viewDirection = viewmatrix.column(2);
+	viewStrafeDirection = viewmatrix.column(0);// CVector3f(0, 1, 0).cross(viewDirection);
+//	CVector3f testviewStrafeDirection = viewmatrix.column(0);
 	//viewmatrix *= viewmatrix.rotate(camOrientation.z, CVector3f(0, 0, 1));
 	viewmatrix *= Matrix4::translate(camPos);
 	
