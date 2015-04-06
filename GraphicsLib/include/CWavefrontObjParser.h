@@ -27,7 +27,7 @@ class CWavefrontObjParser
 		FILE *mPfile;                                    ///<File pointer
 	
 	public:
-		bool initParser();                                ///<Initialise the parser         
+	 	bool initParser();                                ///<Initialise the parser         
 		bool openFile(const char* pFileName);             ///<Open a file for reading     
 		bool headerCompare(char header);                  ///<                      
 		void parseMesh(CMesh &mesh, bool flip = false);	  ///<Parse the mesh in to a CCmpMesh structure               

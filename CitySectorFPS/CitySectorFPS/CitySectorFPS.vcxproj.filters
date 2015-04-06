@@ -15,6 +15,7 @@
     </Filter>
     <Filter Include="Data">
       <UniqueIdentifier>{326213e1-f685-40d8-9856-cf0cfd3294d9}</UniqueIdentifier>
+      <ParseFiles>false</ParseFiles>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -40,10 +41,42 @@
     <None Include="..\..\data\simpleshader.vert">
       <Filter>Data</Filter>
     </None>
+    <None Include="..\..\data\house.blend">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\house.blend1">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\houseshaded.mtl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\houseshaded.v3d">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\testhouse.mtl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\..\data\testshapefromblender.mtl">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\data\testimage.png">
       <Filter>Data</Filter>
     </Image>
+    <Image Include="..\..\data\HouseAmbientOcclusion.png">
+      <Filter>Data</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="..\..\data\houseshaded.obj">
+      <Filter>Data</Filter>
+    </Object>
+    <Object Include="..\..\data\testhouse.obj">
+      <Filter>Data</Filter>
+    </Object>
+    <Object Include="..\..\data\testshapefromblender.obj">
+      <Filter>Data</Filter>
+    </Object>
   </ItemGroup>
 </Project>

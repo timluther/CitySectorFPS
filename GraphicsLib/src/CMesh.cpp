@@ -113,11 +113,31 @@ void CMesh::add_polygon(const std::vector<size_t> &indices, bool flip)
 	add_polygon(&indices[0], indices.size(), flip);
 }
 
+void CMesh::resize_index_buffer(size_t newCapacity)
+{
+	if (newCapacity > m_index_capacity)
+	{
+		unsigned int *indices = new unsigned int[newCapacity];		
+		memcpy(indices, m_indices, m_index_count * 4);
+		m_index_capacity = newCapacity;		
+		delete[] m_indices;
+		m_indices = indices;
+	}
+}
+
 void CMesh::add_polygon(const size_t *indices, size_t count, bool flip)
 {
 	unsigned int base_vertex = 0;// m_vertex_count;
 	unsigned int triangle_count = count - 2;
 	unsigned int c = base_vertex + 1;
+	
+	size_t new_index_count = (m_index_count + triangle_count * 3);
+
+	if (m_index_capacity < new_index_count)
+	{
+		resize_index_buffer((new_index_count) + m_index_capacity / 2);
+	}
+
 	if (flip)
 	{
 		for (unsigned int i = 0; i < triangle_count; ++i)
@@ -132,9 +152,9 @@ void CMesh::add_polygon(const size_t *indices, size_t count, bool flip)
 	{
 		for (unsigned int i = 0; i < triangle_count; ++i)
 		{
-			m_indices[m_index_count++] = indices[base_vertex];
-			m_indices[m_index_count++] = indices[c];
-			m_indices[m_index_count++] = indices[c + 1];
+			m_indices[m_index_count] = indices[base_vertex];  ++m_index_count;
+			m_indices[m_index_count] = indices[c];			  ++m_index_count;
+			m_indices[m_index_count] = indices[c + 1];		  ++m_index_count;
 			++c;
 		}
 	}

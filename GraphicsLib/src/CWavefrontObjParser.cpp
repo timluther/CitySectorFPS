@@ -140,10 +140,11 @@ unsigned int skipWhiteSpace(const char *&str)
 		}
 		else if (isEOL(*str))
 		{
-			while (isEOL(*str))
-				++str;
-
-			flags |= EPF_PASSED_EOL;
+			/*while (isEOL(*str))
+				++str;*/
+			
+			flags |= EPF_PASSED_EOL;						
+			break;
 		}
 		else if (*str == 0)
 		{
@@ -191,7 +192,18 @@ int atoiSimpleCount(const char *str, int count)
 
 void CWavefrontObjParser::parseMesh(CMesh &mesh, bool flip)
 {
-	
+	enum EOBJElement
+	{		
+		OE_POSITION,
+		OE_NORMAL,
+		OE_UV,
+		OE_NONE,
+	};
+
+	int vertexElementTypeOrder[] = {-1, -1, -1};
+	int vertexElementTypeCount = -1;
+	EOBJElement LastElementType = OE_NONE;
+
 	std::cout << "Parsing mesh" << std::endl;
 	struct sUniqueVertexIndex
 	{
@@ -249,26 +261,45 @@ void CWavefrontObjParser::parseMesh(CMesh &mesh, bool flip)
 			fscanf_s(mPfile,"%f%f%f",&t_vertex[0],&t_vertex[1],&t_vertex[2]);
 			// range-based looper for each element (doesn't work for this compiler)			
 			positions.push_back(t_vertex * mesh_scale_factor);
+			if (LastElementType != OE_POSITION)
+			{
+				++vertexElementTypeCount;
+				vertexElementTypeOrder[OE_POSITION] = vertexElementTypeCount;
+				LastElementType = OE_POSITION;
+			}
 		}
 		else
 		if (strcmp(mReadHeader,"vn") == 0)
 		{
 			fscanf_s(mPfile,"%f%f%f",&t_normal[0],&t_normal[1],&t_normal[2]);
 			normals.push_back(t_normal);
+			if (LastElementType != OE_NORMAL)
+			{
+				++vertexElementTypeCount;
+				vertexElementTypeOrder[OE_NORMAL] = vertexElementTypeCount;
+				LastElementType = OE_NORMAL;
+			}
 		}
 		else
 		if (strcmp(mReadHeader,"vt") == 0)
 		{
 			fscanf_s(mPfile,"%f%f",&t_uv.x,&t_uv.y);
 			uvs.push_back(t_uv);
+			if (LastElementType != OE_UV)
+			{
+				++vertexElementTypeCount;
+				vertexElementTypeOrder[OE_UV] = vertexElementTypeCount;
+				LastElementType = OE_UV;
+			}
 		}
 		else
 		//mMesh.beg
-		
+		int lineNumber = 0;
 		if (strcmp(mReadHeader,"f") == 0)
 		{
 			char szLine[4096];
 			fgets(szLine, 4096, mPfile);
+		
 			int cidx = 0;
 
 			int pcidx = 0;
@@ -277,7 +308,8 @@ void CWavefrontObjParser::parseMesh(CMesh &mesh, bool flip)
 			int max_element_count =0;
 	
 			const char *ch = szLine;
-			while (!isEOL(*ch))
+			
+			while (!isEOL(*ch) && (*ch))
 			{
 				if (IsWhiteSpace(*ch))
 				{
@@ -286,16 +318,18 @@ void CWavefrontObjParser::parseMesh(CMesh &mesh, bool flip)
 					element_count = 0;
 					skipWhiteSpace(ch);
 				}
-				
+
 				const char *startch = ch;
-				while (isalnum(*ch)) {++ch;}				
+				while (isalnum(*ch)) { ++ch; }
 				tmpFace[cidx++] = atoiSimpleCount(startch, ch - startch);
 				if (*ch == '/')
 				{
 					++element_count;
-					while (*ch=='/') {++ch;}
-				}			
+					while (*ch == '/') { ++ch; }
+				}
+
 			}
+			//std::cout << lineNumber << std::endl;
 
 			element_count = max_element_count + 1;
 			size_t vcount = (cidx) / element_count;
@@ -308,16 +342,18 @@ void CWavefrontObjParser::parseMesh(CMesh &mesh, bool flip)
 			for (unsigned int i = 0; i < vcount; ++i)
 			{
 
-				sUniqueVertexIndex vref = (element_count == 2) ? sUniqueVertexIndex(cface[0]-1, cface[1]-1, 0) : sUniqueVertexIndex(cface[0]-1, cface[2]-1, cface[1]-1);
+				//sUniqueVertexIndex vref = (element_count == 2) ? sUniqueVertexIndex(cface[vertexElementTypeOrder[0]] - 1, cface[vertexElementTypeOrder[1]] - 1, 0) : sUniqueVertexIndex(cface[vertexElementTypeOrder[0]] - 1, cface[vertexElementTypeOrder[1]] - 1, cface[vertexElementTypeOrder[2]] - 1);
+
+				sUniqueVertexIndex vref = (element_count == 2) ? sUniqueVertexIndex(cface[0] - 1, cface[1] - 1, 0) : sUniqueVertexIndex(cface[0] - 1, cface[2] - 1, cface[1] - 1);
 				cface += element_count;
 				CHash hash = vref.GetHash();
 				//hash.next_hash(t_uvIndex[i])
-				auto itr = sUniqueVertices->find(hash);
+				//auto itr = sUniqueVertices->find(hash);
 				size_t vIndex = 0;
-				if (itr == sUniqueVertices->end())
+				//if (itr == sUniqueVertices->end())
 				{
 					vIndex = vVertexIndices.size(); //could 
-					sUniqueVertices->insert(CHashMapInt::value_type(hash, vIndex));
+					//sUniqueVertices->insert(CHashMapInt::value_type(hash, vIndex));
 					vVertexIndices.push_back(vref); //OBJ starts indices at 1 but C++ starts at 0						
 					if ((vref.mPosition>positions.size()) || (vref.mNormal>normals.size()) || (vref.mUv>uvs.size()))
 					{
@@ -327,15 +363,17 @@ void CWavefrontObjParser::parseMesh(CMesh &mesh, bool flip)
 					mesh.mVertexBuffer.AddVertex(SVertex_P_D4B_N_UV(positions[vref.mPosition], vref.mNormal < normals.size() ? normals[vref.mNormal] : CVector3f(1,0,0), vref.mUv < uvs.size() ? uvs[vref.mUv] : CVector2f(0,0), 0xFFFFFFFF));
 					//add 
 				}
-				else
+				/*else
 				{
 					vIndex = itr->second;
-				}
+				}*/
 				
 				polygon_indices.push_back(vIndex);
+				//++lineNumber;
 			}	
 		
 			mesh.add_polygon(polygon_indices, flip);
+			//std::cout << mesh.m_index_count / 3 << std::endl;
 		}
 		
 	}

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
+#include "CWavefrontObjParser.h"
 #include "UtilLogger.h"
 
 size_t segment_count = 10, slice_count = 10;
@@ -19,6 +19,11 @@ int m_matrix_handle = -1;
 Matrix4 mat;
 Matrix4 objectmat;
 
+CVector3f lightDirection = CVector3f(1, 0.4, 0.2).normal();
+CVector3f skyColour(0.7f, 0.8f, 0.9f);
+CVector3f groundColour(0.3f, 0.2f, 0.1f);
+
+CMesh *house_mesh = NULL;
 CMesh *my_test_mesh = NULL;
 CitySectorFPS::CitySectorFPS()
 	: SampleApplication("HelloTriangle", 1280, 720)
@@ -35,19 +40,59 @@ struct sShaderHandles
 	int TextureSampler;
 	int MaterialColour;
 
+	int ulightNormal;
+	int uSkyColour;
+	int uGroundColour;
+
+
 	void Init(int ProgramHandle)
 	{
 		MaterialColour = glGetUniformLocation(ProgramHandle, "MaterialColour");
 		uMMatrix = glGetUniformLocation(ProgramHandle, "u_mmatrix");
 		uMvpMatrix = glGetUniformLocation(ProgramHandle, "u_mvpmatrix");		
 		TextureSampler = glGetUniformLocation(ProgramHandle, "TextureSampler");
+		ulightNormal = glGetUniformLocation(ProgramHandle, "uLightNormal");
+		uSkyColour = glGetUniformLocation(ProgramHandle, "uSkyColour");
+		uGroundColour = glGetUniformLocation(ProgramHandle, "uGroundColour");
 		aNormal = glGetAttribLocation(ProgramHandle, "aNormal");
 		aTexCoord = glGetAttribLocation(ProgramHandle, "aTexCoord");
 		aPosition = glGetAttribLocation(ProgramHandle, "aPosition");
+
+	}
+
+	void ApplyUniforms(const Matrix4 &mat, const Matrix4 &MVPmatrix, const Matrix4 &WorldMatrix, int texid)
+	{
+		if (uMvpMatrix != -1)
+			glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&MVPmatrix);
+
+		if (uMMatrix != -1)
+			glUniformMatrix4fv(uMMatrix, 1, false, (const float*)&WorldMatrix);
+		if (MaterialColour != -1)
+			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
+
+		if (ulightNormal != -1)
+			glUniform3f(ulightNormal, lightDirection.x, lightDirection.y, lightDirection.z);
+		if (uSkyColour != -1)
+			glUniform3f(uSkyColour, skyColour.x, skyColour.y, skyColour.z);
+		if (uGroundColour != -1)
+			glUniform3f(uGroundColour, groundColour.x, groundColour.y, groundColour.z);
+
+
+		CheckGLErrors("Error has occured lol7");
+
+		if (MaterialColour != -1)
+			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
+		unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
+
+		if (TextureSampler != -1)
+		{
+			unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
+			glUniform1i(TextureSampler, 0);
+		}
 	}
 
 #define BUFFER_OFFSET(i) ((char*)NULL +(i << 2))
-	void Use(GLfloat *vertices, GLfloat *texturecoordinates, GLfloat *normals, Matrix4 &MVPmatrix, Matrix4 &WorldMatrix, int texid)
+	void Use(GLfloat *vertices, GLfloat *texturecoordinates, GLfloat *normals, Matrix4 &MVPmatrix, const Matrix4 &WorldMatrix, int texid)
 	{
 		int stride = 36;
 		CheckGLErrors("Error has occured lol3");
@@ -60,19 +105,11 @@ struct sShaderHandles
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
 		CheckGLErrors("Error has occured lol4");
-		if (uMvpMatrix != -1)
-			glUniformMatrix4fv(uMvpMatrix, 1, false, (const float*)&MVPmatrix);
-
-		if (uMMatrix != -1)
-			glUniformMatrix4fv(uMMatrix, 1, false, (const float*)&WorldMatrix);
-		if (MaterialColour != -1)
-			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
-		unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
-		if (TextureSampler != -1)
-			glUniform1i(TextureSampler, 0);
+		ApplyUniforms(mat, MVPmatrix, WorldMatrix, texid);				
 		CheckGLErrors("Error has occured lol5");
-
 	}
+
+	
 
 	void Deinit()
 	{
@@ -84,26 +121,23 @@ struct sShaderHandles
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.GetGLHandle());
 		CheckGLErrors("Error has occured lol6");
 	
-		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, buffer.GetVertexSize(), (void*)0);
+		glVertexAttribPointer(aPosition, 3, GL_FLOAT, GL_FALSE, buffer.GetVertexSize(), (void*)0);			//these are offsets in to a data structure 
 		if (aPosition != -1)
 			glEnableVertexAttribArray(aPosition);
 		CheckGLErrors("Error has occured lol9");
+
+
+		glVertexAttribPointer(aNormal, 2, GL_FLOAT, GL_FALSE, buffer.GetVertexSize(), (void*)12);
+		if (aNormal != -1)
+			glEnableVertexAttribArray(aNormal);
+
 		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, buffer.GetVertexSize(), (void*)24);
 		if (aTexCoord != -1)
 			glEnableVertexAttribArray(aTexCoord);
-		CheckGLErrors("Error has occured lol7");
-		if (uMvpMatrix != -1)
-			glUniformMatrix4fv(uMvpMatrix, 1, GL_FALSE, (const float*)&MVPmatrix.data);
-		if (uMMatrix != -1)
-			glUniformMatrix4fv(uMMatrix, 1, GL_FALSE, (const float*)&mat.data);
-		CheckGLErrors("Error has occured lol7b");
-		if (MaterialColour != -1)
-			glUniform4f(MaterialColour, 1.0f, 1.0f, 1.0f, 1.0f);
-		if (TextureSampler != -1)
-		{
-			unsigned int GLtexid = TextureManager::Inst()->GetTextureId(texid);
-			glUniform1i(TextureSampler, 0);
-		}
+
+
+		ApplyUniforms(mat, MVPmatrix, Matrix4(), texid);
+		
 		CheckGLErrors("Error has occured lol8");
 
 	}
@@ -194,12 +228,24 @@ bool CitySectorFPS::initialize()
 	}
 
 	
+	CWavefrontObjParser parser;
+	parser.initParser();
+
+	//parser.openFile((ApplicationDataDir + "houseshaded.obj").c_str());             ///<Open a file for reading     
+	parser.openFile((ApplicationDataDir + "testshapefromblender.obj").c_str());             ///<Open a file for reading     
+
+	house_mesh = new CMesh(100000,32000*6);
+	parser.parseMesh(*house_mesh, false);	  ///<Parse the mesh in to a CCmpMesh structure               	
+
 
 	gShaderHandles.Init(mProgram);
 	gLitShaderHandles.Init(mLightingProgram);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+	house_mesh->fill_GPU_buffers();
 	my_test_mesh = new CMesh();
+
+	
 	
 	unsigned int v_count = 0;
 	unsigned int t_count = 0;
@@ -214,12 +260,11 @@ bool CitySectorFPS::initialize()
 	mat.perspective(90.0, 1.0, 0.1f, 1000.0f);
 	//TODO: make sure this uses relative paths some day
 	//C:\\Users\\Brython\\Documents\\Code\\CitySectorFPS\\
+		
+	TextureManager::Inst()->LoadTexture((ApplicationDataDir + "testimage.png").c_str(), 0);
+	TextureManager::Inst()->LoadTexture((ApplicationDataDir + "HouseAmbientOcclusion.png").c_str(), 1);
 
-	
-	
-	std::string ImagePath = ApplicationDataDir + "testimage.png";
 
-	TextureManager::Inst()->LoadTexture(ImagePath.c_str(), 0);	
 	return true;
 }
 
@@ -232,6 +277,64 @@ CVector3f objectOrientation(0, 0, 0);
 
 CVector3f viewDirection(0, 0, 1);
 CVector3f viewStrafeDirection(1, 0, 0);
+CVector3f viewUpDirection(0, 1, 0);
+
+enum EDepthFunction
+{
+	ZF_NEVER,
+	ZF_LESS,
+	ZF_LESS_EQUAL,
+	ZF_EQUAL,
+	ZF_GREATER_EQUAL,
+	ZF_GREATER,
+	ZF_ALWAYS
+};
+
+
+void SetZFunc(EDepthFunction func)
+{
+	if (func == ZF_NEVER)
+	{
+		glDisable(GL_DEPTH_TEST);
+		glDepthMask(false);
+	}
+	else if (func == ZF_LESS)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+	}
+	else if (func == ZF_LESS_EQUAL)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+	}
+	else if (func == ZF_EQUAL)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_EQUAL);
+	}
+	else if (func == ZF_GREATER_EQUAL)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_GEQUAL);
+	}
+	else if (func == ZF_GREATER)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_GREATER);
+	}
+	else if (func == ZF_ALWAYS)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_ALWAYS);
+	}
+	else
+	{
+	
+	}
+
+}
+
 
 
 void CitySectorFPS::handleEvent(Event *event)
@@ -301,10 +404,10 @@ void CitySectorFPS::draw()
 {
 	GLfloat vertices[] =
 	{
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 10000.0f,
+		1.0f, -1.0f, 10000.0f,
+		1.0f, 1.0f, 10000.0f,
+		-1.0f, 1.0f, 10000.0f,
 	};
 
 	GLfloat texcoords[] =
@@ -321,7 +424,8 @@ void CitySectorFPS::draw()
 
 	// Clear the color buffer
 	glClearColor(0.1, 0.1, 0.1, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClearDepthf(10000.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glActiveTexture(GL_TEXTURE0);
 
 	// Use the program object
@@ -365,8 +469,12 @@ void CitySectorFPS::draw()
 
 	//Matrix4 MVP = objmat * viewmatrix * projmat;
 	CheckGLErrors("Error has occured alpha");
-	gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, objmat, MVP, 0);
-	my_test_mesh->draw();
+	//gLitShaderHandles.Use(my_test_mesh->mVertexBuffer, objmat, MVP, 0);
+	//my_test_mesh->draw();
+	SetZFunc(ZF_LESS_EQUAL);
+	gLitShaderHandles.Use(house_mesh->mVertexBuffer, objmat, MVP, 0);
+	TextureManager::Inst()->BindTexture(0, 1);
+	house_mesh->draw();
 	gShaderHandles.Deinit();
 }
 

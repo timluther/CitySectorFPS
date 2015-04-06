@@ -51,6 +51,8 @@ class CMesh
 
 		void fill_GPU_buffers();
 
+		void resize_index_buffer(size_t newCapacity);
+
 		CVertexBuffer mVertexBuffer;
 		CIndexBuffer<unsigned short>  mIndexBuffer;
         CVector3f *m_vertices;
